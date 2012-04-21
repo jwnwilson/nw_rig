@@ -1,0 +1,2 @@
+NWHingeJoints default.png
+NWSpineJoints default.png

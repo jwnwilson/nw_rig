@@ -1,0 +1,9 @@
+// ------------------------------------
+// IssWebbingKnot   
+// ------------------------------------
+prop IssWebbingKnot    IssWebbingKnot      	         = rigTemplateModuleRigGroup
+prop IssWebbingKnot    --SYSTEM--
+prop IssWebbingKnot    render_primary_default           = gravityRigSystemModuleRootTether
+prop IssWebbingKnot    --COMPONENT--                    = rigModule
+prop IssWebbingKnot    anim_puppet_default              = rigPuppetModuleRoot						// Anim puppet component
+prop IssWebbingKnot    render_body_default              = rigBodyModuleRoot					 	// Render body component
