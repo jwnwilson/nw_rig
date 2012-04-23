@@ -59,11 +59,11 @@ def storeKwargs(node, attr, **kwargs):
     
 @dataExistsWrapper
 def getString(node, attr):
-    cmds.getAttr((node+"." + attr))
+    return cmds.getAttr((node+ "." + attr))
     
 @dataExistsWrapper
 def getStringArray(node, attr):
-    cmds.getAttr((node+"." + attr))
+    return cmds.getAttr((node+"." + attr))
     
 @dataExistsWrapper
 def getArgs(node, attr):

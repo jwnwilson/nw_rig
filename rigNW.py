@@ -23,6 +23,8 @@ import os
 import sys
 import maya.OpenMaya as OpenMaya
 from functools import wraps
+import mayaTraceback
+mayaTraceback.run()
 
 PATH_INDICE = 0
 ROOT_PATH=[]
@@ -127,7 +129,7 @@ class RigNW:
                 exec command
                 
                 mod.start()
-                self.Modules[module] = mod
+                self.Modules[mod.name] = mod
                 cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
                 cmds.container( self.Modules["root"].container, edit=True, an= mod.container)
             else:
@@ -183,7 +185,6 @@ class RigNW:
             print "Problem here"
             moduleType = util.getString(module, "type")
             command = ("module = NWModulePackage." + str(moduleType) + "." + str(moduleType) + "('"+ util.removeSuffix(module) +"')")
-            print command
             exec command
             return module
 if __name__ == "__main__":

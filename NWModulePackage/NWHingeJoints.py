@@ -80,13 +80,12 @@ class NWHingeJoints(NWModule.NWModule):
                 
         @NWModule.buildPrePost
         def build(self,**kwargs):
+        	
                 # check for module container
                 rootGrp = cmds.group( n = (self.name + "Build_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
                 setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
                 
-                if self.startVar  == False :
-                    cmds.error(("Start method not run for " + self.name))
                 #get starter joints
                 starters  = self.getStarterJoints()
                 
