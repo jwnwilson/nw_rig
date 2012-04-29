@@ -1,4 +1,4 @@
-window = NWWindowPackage.NWWindow.NWWindow({"NWRig":rigNw},name= self.name, windowWidth = 400, windowHeight = 400, title = "NWWindow")
+window = NWWindowPackage.NWWindow.NWWindow({},name= self.name, windowWidth = 400, windowHeight = 400, title = "NWWindow", NWRig = self)
 window.layout({'label':'root'})
 createTab = window.layout({'label':'tab1','type':'tabLayout'})
 frame1 = window.layout({'parent':createTab,'label':'create','type':'frameLayout'})

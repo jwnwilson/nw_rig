@@ -12,8 +12,8 @@ MAYA_STANDALONE = 0
 DEBUG =0
 
 if MAYA_STANDALONE or DEBUG:
-        import maya.standalone
-        maya.standalone.initialize()
+    import maya.standalone
+    maya.standalone.initialize()
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -27,39 +27,43 @@ from functools import wraps
 PATH_INDICE = 0
 ROOT_PATH=[]
 #LIBRARIES = []
-PACKAGES =[]
-
-if os.name == 'posix':
-        FILE_PATH = "/media/WALKMAN/Python/NWRig/"
-elif os.name == 'nt':
-        FILE_PATH = "C:/Documents and Settings/Noel Wilson/My Documents/python/NWRig/"
-ROOT_PATH.append(FILE_PATH)
-
-def addSysPaths(paths):
-    """
-        Adds paths to sys.path global variable if they aren't being used
-    """
-    for path in paths:
-            if path not in sys.path:
-                    sys.path.append( path )
+PACKAGES ={}
 
 """
+Add python directory to sys.path if necessary depending on operating system
+"""
+if os.name == 'posix':
+    FILE_PATH = "/media/WALKMAN/Python/NWRig/"
+elif os.name == 'nt':
+    FILE_PATH = "F:\Documents and Settings\Noel Wilson\My Documents\Git\NWRig"
+if FILE_PATH not in sys.path:
+    sys.path.append( FILE_PATH )
+
+"""
+source utilities first remove duplicate code in __init__
 source packages
 """
-addSysPaths(ROOT_PATH)
-
-from NWUtilitiesPackage.NWFileUtilities import *
+import NWUtilitiesPackage.NWFileUtilities as fileUtil
 import NWUtilitiesPackage.NWUtilities as util
+reload(fileUtil)
+reload(util)
 
-PACKAGES = import_packages(ROOT_PATH[0])
+"""
+Dynamic importing of modules
+"""
+PACKAGES = fileUtil.import_packages( FILE_PATH )
+for key in PACKAGES.keys():
+	globals()[key] = PACKAGES[key]
 
 class Command:
         def __init__(self,name): 
                 self.name = name
                 
-
 # contains rig system
 class RigNW:
+        """
+            Manages project and loads gui / builds the rig
+        """
         def __init__(self, name, **kwargs):
                 classArgs = {"UIFile":"default.txt","rebuildUI":True}
                 classArgs =  dict(classArgs.items() + kwargs.items())
@@ -71,7 +75,6 @@ class RigNW:
                     self.UI = self.initialiseUI()
                 
         def initialiseUI(self):
-            # window = NWWindowPackage.NWWindow.NWWindow({})
             # read in UIFile
             windowDir = NWWindowPackage.__path__
             filePath = (windowDir[0] + "/blueprints/" +self.UIFile)
@@ -88,7 +91,7 @@ class RigNW:
             # get name of rig
             self.__init__(self.name, rebuildUI = False)
             name = self.name
-            rootMod = NWModulePackage.NWRoot.NWRoot(self.name)
+            rootMod = NWRoot.NWRoot(self.name)
             self.Modules["root"] = rootMod
             self.Modules["root"].start()
             self.rootGrp = self.Modules["root"].rootGrp
@@ -105,7 +108,6 @@ class RigNW:
                 return False
         def checkMethod(self,name, method):
                 # Check method variable set after completion
-                print self.Modules
                 if method == "start" and self.Modules[name].startVar == 0:
                         return True
                 if method == "build" and self.Modules[name].buildVar == 0:
@@ -122,11 +124,14 @@ class RigNW:
             
             # create command
             if not self.moduleExists(name):
-                command = ("mod = NWModulePackage." + str(module) + "." + str(module) + "('"+ name +"')")
+                command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
                 exec command
                 
-                mod.start()
-                self.Modules[module] = mod
+                try:
+                    mod.start()
+                except:
+                    print "Unexpected error:", sys.exc_info()[0]
+                self.Modules[mod.name] = mod
                 cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
                 cmds.container( self.Modules["root"].container, edit=True, an= mod.container)
             else:
@@ -145,7 +150,10 @@ class RigNW:
                 # check module exists and build has not been run
                 if self.moduleExists(name) and self.checkMethod(name, "build"):
                         mod = self.Modules[name]
-                        mod.build()
+                        try:
+                            mod.build()
+                        except:
+                            print "Unexpected error:", sys.exc_info()
                 else:
                         print "Module \"" + name + "\" already built!";
         def refreshModuleList(self):
@@ -170,7 +178,7 @@ class RigNW:
                 if contents:
                     for item in contents:
                         if cmds.objectType(item) == "container":
-                            containers[removeSuffix(item)] = reloadModule(item)
+                            containers[util.removeSuffix(item)] = self.reloadModule(item)
                             containers = dict(containers.items() + (self.getContainerChildren(item)).items())
                 return containers
             else:
@@ -180,11 +188,10 @@ class RigNW:
                 Gets data from container and rebuilds python object
             """
             moduleType = util.getString(module, "type")
-            command = ("module = NWModulePackage." + str(moduleType) + "." + str(moduleType) + "('"+ removeSuffix(module) +"')")
+            command = ("module = " + str(moduleType) + "." + str(moduleType) + "('"+ util.removeSuffix(module) +"')")
             exec command
             return module
 if __name__ == "__main__":
-    #PACKAGES = import_packages(ROOT_PATH[0])
     print "Starting test:"
     global NWRig
     NWRig = RigNW("nwRig")

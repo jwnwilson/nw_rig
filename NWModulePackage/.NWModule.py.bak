@@ -2,14 +2,17 @@
 Module that is parent of all other rig module components
 """
 from functools import wraps
+import NWUtilitiesPackage.NWUtilities as util
 import maya.cmds as cmds
+
+print "gay?"
 
 
 def startPrePost(start):
         @wraps(start)
         def wrapper(*args, **kwds):
             args[0].startPre()
-            print ("calling :" + start.__name__)
+            print ("calling :" + start.__name__ + " " + args[0].name)
             ret = start(*args, **kwds)
             args[0].startPost()
             return ret
@@ -18,6 +21,8 @@ def startPrePost(start):
 def buildPrePost(build):
         @wraps(build)
         def wrapper(*args, **kwds):
+	    if args[0].startVar  == False :
+               cmds.error(("Start method not run for " + self.name))
             args[0].buildPre()
             print ("calling :" + build.__name__)
             ret = build(*args, **kwds)

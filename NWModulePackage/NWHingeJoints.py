@@ -20,12 +20,12 @@ class NWHingeJoints(NWModule.NWModule):
                 #create container to store all module variables
                 
                 rootGrp = cmds.group( n = (self.name + "Start_GRP"), em = True )
-                jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True )
+                jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True )
                 
                 # create starters
-                base = util.createStarter((self.name + "base"), {"shape":"sphere", "size": 0.5})
-                middle = util.createStarter((self.name + "middle"), {})
-                end  = util.createStarter((self.name + "end"), {"shape":"sphere", "size": 0.5})
+                base = util.createStarter((self.name + "Base"), {"shape":"sphere", "size": 0.5})
+                middle = util.createStarter((self.name + "Middle"), {})
+                end  = util.createStarter((self.name + "End"), {"shape":"sphere", "size": 0.5})
                 
                 # manage starter joints
                 joints = []
@@ -80,22 +80,20 @@ class NWHingeJoints(NWModule.NWModule):
                 
         @NWModule.buildPrePost
         def build(self,**kwargs):
-        	
-                # check for module container
+                # Check for module container
                 rootGrp = cmds.group( n = (self.name + "Build_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
                 setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
                 
-                #get starter joints
+                # Get starter joints
                 starters  = self.getStarterJoints()
-                
                 for joint in starters:
                     if cmds.objExists(joint) == False:
                         cmds.error(joint + " not found!")
 
                 # Duplicate joints
                 joints = util.duplicateChain( self.name , starters)
-                cmds.parent(joints,jointGrp)
+                cmds.parent(joints[0],jointGrp)
                 
                 if len(joints) > 3:
                     cmds.error("Too many joints in: " + self.name + "!")
@@ -103,8 +101,12 @@ class NWHingeJoints(NWModule.NWModule):
                 cmds.setAttr((self.name + "Start_GRP" + ".v"), 0)
                 
                 # Create ikHandle
-                handleData = util.createIkHandle(joints)
-                poleData =   util.createPoleVec(joints, handleData[1])
+                handleData = util.createIkHandle(self.name, joints, {})
+                print handleData
+                poleData =  util.createPoleVec(joints, handleData[0], 3)
+                
+                cmds.parent(handleData, setupGrp)
+                cmds.parent(poleData, setupGrp)
                 
                 # Create controls for handle
                 

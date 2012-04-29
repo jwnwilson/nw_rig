@@ -12,6 +12,13 @@ To do:
 import maya.cmds as cmds
 from vector import *
 from functools import wraps
+        
+# lib functions
+def getFirst(array):
+    try:
+        return array[0]
+    except:
+        error("Error getting first element of object :" + array )
 
 #attribute functions
 def addStringAttribute(node,attr,data):
@@ -306,23 +313,36 @@ def cubeCtl( name, functArgs ):
         return J
         
 # Ik functions
-def createIkHandle(joints):
+def createIkHandle(name, joints, functArgs):
     'Creates Ik handle for three joints'
+    args = {"solver":"ikRPsolver"}
+    functArgs =  dict(functArgs.items() + args.items())
+    
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
     
-    handleData = cmds.ikHandle( sj= joints[0], ee= joints[2], p=2, w=1)
+    handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["solver"], sj= joints[0], ee= joints[2], p= 2, w= 1)
     
     return handleData
 
-def createPoleVec(joints, ikHandle):
+def createPoleVec(joints, ikHandle, distance):
     'Creates pole vector for handle for three joints'
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
         
-    poisiton = getPolePosition(joints, 3)
+    poisiton = getPolePosition(joints, distance)
     
     # Create locator to act as pole vector
+    locName = (removeSuffix(ikHandle) + "Pole_LOC")
+    poleGrpName = (removeSuffix(ikHandle) + "Pole_GRP")
+    poleVecName = (removeSuffix(ikHandle) + "Pole_PVC")
+    
+    loc = cmds.spaceLocator(n = locName, p= (poisiton[0], poisiton[1], poisiton[2]) )
+    locGrp = cmds.group(loc, n= poleGrpName)
+    
+    cmds.poleVectorConstraint( loc , ikHandle, n= poleVecName, w=.1 )
+    
+    return locGrp
     
 def getPolePosition(joints, distance):
     'Returns best pole vector position'
@@ -409,11 +429,15 @@ def createChain(chainNo, ChainName):
     
 def duplicateChain(name , chainJoints):
         'Duplicates a chain of joints'
-        i = 0   
-        joints = cmds.duplicate(chainJoints[0], n = (name + i + "_JNT"))
+        i = 1
+        joints = []
+        jointNo = len(chainJoints)
         
-        for j in joints:
-            cmds.rename(j,(name + i + "_JNT") )
+        for x in range( jointNo ):
+            joints.append( getFirst(cmds.duplicate(chainJoints[x], po = True, n = (name + str(x + 1) + "_JNT"))) ) 
+        
+        for x in range( 1, jointNo ):
+            cmds.parent(joints[jointNo - x], joints[jointNo - (x + 1)])
         
         return joints
 
@@ -494,10 +518,6 @@ def match(target, source, args):
     if functArgs["all"] == 1:
         parConst = cmds.parentConstraint( target, source,  mo = mainOff )
         cmds.delete( parConst )
-        
-# lib functions
-def getFirst(array):
-    return array[0]
 
 # arg functions
 def checkArgs(argNames, args):
@@ -597,7 +617,7 @@ def matrixConstraint(parent , child, mainOff, args):
     cmds.connectAttr( (child + ".parentInverseMatrix"), (matrixMulti1 + ".matrixIn[2]"), f= True )
     
     # make child rotate around parent instead of copy it's rotation
-    orc = cmds.createNode( "orientConstraint", n= "orientConst", p= child  )
+    orc = cmds.createNode( "orientConstraint", n= (removeSuffix(child) + "Const_ORC"), p= child  )
     
     #final connect
     cmds.connectAttr( (matrixMulti1 + ".matrixSum") , (matrixDecom + ".inputMatrix") , f= True )

@@ -12,6 +12,13 @@ To do:
 import maya.cmds as cmds
 from vector import *
 from functools import wraps
+        
+# lib functions
+def getFirst(array):
+    try:
+        return array[0]
+    except:
+        error("Error getting first element of object :" + array )
 
 #attribute functions
 def addStringAttribute(node,attr,data):
@@ -21,32 +28,6 @@ def addStringAttribute(node,attr,data):
 def addStringArrayAttribute(node,attr,data):
     cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
     cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
-
-# Container functions
-def getContainerChildren(cont):
-    """
-        Finds all children containers of passed container
-    """
-    containers = {}
-    if cmds.objExists(cont):
-        # populate module list
-        contents = cmds.container(cont, query= True, nodeList= True)
-        if contents:
-            for item in contents:
-                if cmds.objectType(item) == "container":
-                    containers[removeSuffix(item)] = reloadModule(item)
-                    containers = dict(containers.items() + (getContainerChildren(item)).items())
-        return containers
-    else:
-        cmds.error("Root containter not found for refresh")
-def reloadModule(module):
-    """
-        Gets data from container and rebuilds python object
-    """
-    moduleType = getString(module, "type")
-    command = ("module = NWModulePackage." + str(moduleType) + "." + str(moduleType) + "('"+ removeSuffix(module) +"')")
-    exec command
-    return module
 #storage functions        
 def dataExists(node, attr):
     if cmds.attributeQuery( attr, node= node,exists =True ):
@@ -85,11 +66,11 @@ def storeKwargs(node, attr, **kwargs):
     
 @dataExistsWrapper
 def getString(node, attr):
-    cmds.getAttr((node+"." + attr))
+    return cmds.getAttr((node+ "." + attr))
     
 @dataExistsWrapper
 def getStringArray(node, attr):
-    cmds.getAttr((node+"." + attr))
+    return cmds.getAttr((node+"." + attr))
     
 @dataExistsWrapper
 def getArgs(node, attr):
@@ -332,16 +313,19 @@ def cubeCtl( name, functArgs ):
         return J
         
 # Ik functions
-def createIkHandle(joints):
+def createIkHandle(name, joints, functArgs):
     'Creates Ik handle for three joints'
+    args = {"solver":"ikRPsolver"}
+    functArgs =  dict(functArgs.items() + args.items())
+    
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
     
-    handleData = cmds.ikHandle( sj= joints[0], ee= joints[2], p=2, w=1)
+    handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["solver"], sj= joints[0], ee= joints[2], p= 2, w= 1)
     
     return handleData
 
-def createPoleVec(joints, ikHandle):
+def createPoleVec(joints, ikHandle, distance):
     'Creates pole vector for handle for three joints'
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
@@ -349,6 +333,16 @@ def createPoleVec(joints, ikHandle):
     poisiton = getPolePosition(joints, 3)
     
     # Create locator to act as pole vector
+    locName = (removeSuffix(ikHandle) + "Pole_LOC")
+    poleGrpName = (removeSuffix(ikHandle) + "Pole_GRP")
+    poleVecName = (removeSuffix(ikHandle) + "Pole_PVC")
+    
+    loc = cmds.spaceLocator(n = locName, p= (poisiton[0], poisiton[1], poisiton[2]) )
+    locGrp = cmds.group(loc, n= poleGrpName)
+    
+    cmds.poleVectorConstraint( loc , ikHandle, n= poleVecName, w=.1 )
+    
+    return locGrp
     
 def getPolePosition(joints, distance):
     'Returns best pole vector position'
@@ -435,11 +429,15 @@ def createChain(chainNo, ChainName):
     
 def duplicateChain(name , chainJoints):
         'Duplicates a chain of joints'
-        i = 0   
-        joints = cmds.duplicate(chainJoints[0], n = (name + i + "_JNT"))
+        i = 1
+        joints = []
+        jointNo = len(chainJoints)
         
-        for j in joints:
-            cmds.rename(j,(name + i + "_JNT") )
+        for x in range( jointNo ):
+            joints.append( getFirst(cmds.duplicate(chainJoints[x], po = True, n = (name + str(x + 1) + "_JNT"))) ) 
+        
+        for x in range( 1, jointNo ):
+            cmds.parent(joints[jointNo - x], joints[jointNo - (x + 1)])
         
         return joints
 
@@ -520,10 +518,6 @@ def match(target, source, args):
     if functArgs["all"] == 1:
         parConst = cmds.parentConstraint( target, source,  mo = mainOff )
         cmds.delete( parConst )
-        
-# lib functions
-def getFirst(array):
-    return array[0]
 
 # arg functions
 def checkArgs(argNames, args):
@@ -623,7 +617,7 @@ def matrixConstraint(parent , child, mainOff, args):
     cmds.connectAttr( (child + ".parentInverseMatrix"), (matrixMulti1 + ".matrixIn[2]"), f= True )
     
     # make child rotate around parent instead of copy it's rotation
-    orc = cmds.createNode( "orientConstraint", n= "orientConst", p= child  )
+    orc = cmds.createNode( "orientConstraint", n= (removeSuffix(child) + "Const_ORC"), p= child  )
     
     #final connect
     cmds.connectAttr( (matrixMulti1 + ".matrixSum") , (matrixDecom + ".inputMatrix") , f= True )

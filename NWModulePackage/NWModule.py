@@ -10,17 +10,16 @@ def startPrePost(start):
         @wraps(start)
         def wrapper(*args, **kwds):
             args[0].startPre()
-            print ("calling :" + start.__name__)
+            print ("calling :" + start.__name__ + " " + args[0].name)
             ret = start(*args, **kwds)
             args[0].startPost()
-            self.startVar = True
             return ret
         return wrapper
         
 def buildPrePost(build):
         @wraps(build)
         def wrapper(*args, **kwds):
-	    if self.startVar  == False :
+	    if args[0].startVar  == False :
                cmds.error(("Start method not run for " + self.name))
             args[0].buildPre()
             print ("calling :" + build.__name__)

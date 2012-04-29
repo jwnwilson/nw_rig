@@ -16,10 +16,10 @@ class Vector:
         cls.z = float(inList[2])
         return cls
     def __add__(self, val):
-        return Point( self[0] + val[0], self[1] + val[1],self[2] + val[2] )
+        return Vector( self.x + val[0], self.y + val[1],self.z + val[2] )
     
     def __sub__(self,val):
-        return Point( self[0] - val[0], self[1] - val[1],self[2] - val[2] )
+        return Vector( self.x - val[0], self.y - val[1], self.z - val[2] )
     
     def __iadd__(self, val):
         self.x = val[0] + self.x
@@ -34,10 +34,10 @@ class Vector:
         return self
     
     def __div__(self, val):
-        return Point( self[0] / val, self[1] / val, self[2] / val )
+        return Vector( self[0] / val, self[1] / val, self[2] / val )
     
     def __mul__(self, val):
-        return Point( self[0] * val, self[1] * val, self[2] * val )
+        return Vector( self[0] * val, self[1] * val, self[2] * val )
     
     def __idiv__(self, val):
         self[0] = self[0] / val

@@ -8,9 +8,6 @@ def addSysPaths(paths):
     for path in paths:
             if path not in sys.path:
                     sys.path.append( path )
-            #for lib in LIBRARIES:
-            #        if ( path + lib) not in sys.path:
-            #                sys.path.append( path + lib)
 
 # Moving to utilities file
 def importModule(name):
@@ -31,9 +28,41 @@ def loadModule(module_name):
     	    	reload( globals()[module_name] )
     	else:
     	    	print ("Importing : " + module_name )
-    	    	globals()[module_name] = __import__(module_name)
+    	    	globals()[module_name] = __import__(module_name) 
+    	    	
+        return globals()[module_name]
     except ImportError:
         print ("Error loading :" + module_name)
+        
+def loadPackage(package_name):
+    """
+	    Will see if package is loaded and import it or reload it 
+	    respectively
+    """
+    def loadPackageModules(package_name):
+        modules = {}
+        modulesNames = []
+        modules[package_name] = globals()[package_name] 
+        modulesNames =  globals()[package_name].__all__
+        for moduleName in modulesNames:
+            print ("Loading " + moduleName)
+            modules[moduleName] = loadModule(moduleName)
+        return modules
+        
+    modules = {}
+    try:
+    	if globals().has_key(package_name):
+    	    	print ("Reloading : " + package_name )
+    	    	reload( globals()[package_name] )
+    	    	modules = loadPackageModules(package_name)
+    	else:
+    	    	print ("Importing : " + package_name )
+    	    	globals()[package_name] = __import__(package_name)    
+    	    	modules = loadPackageModules(package_name)
+    	    	
+        return modules
+    except ImportError:
+        print ("Error loading :" + package_name)
 
 def import_libs(dir):
     """ Imports the libs, returns a list of the libraries. 
@@ -46,8 +75,6 @@ def import_libs(dir):
         if ext == '.py': # Important, ignore .pyc/other files.
             print 'importing module: %s' % (module_name)
             loadModule(module_name)
-            #globals()[module_name] = __import__(module_name)
-            #reload( globals()[module_name] )
             library_list[module_name] = globals()[module_name]
  
     return library_list
@@ -62,12 +89,9 @@ def import_packages(dir):
         package_name, ext = os.path.splitext( d ) # Handles no-extension files, etc.
         if ext == '' and os.path.isdir( dir+ "/" + package_name): # Important, ignore .pyc/other files.
             if "__init__.py" in os.listdir( os.path.abspath(dir + "/" + package_name + "/") ):
-                print 'importing package: %s' % (package_name)
+                print 'loading package: %s' % (package_name)
                 if (dir  + d + "/") not in sys.path:
                         sys.path.append( dir + d + "/" )
-		loadModule(package_name)
-                #globals()[package_name] = __import__(package_name)
-                #reload( globals()[package_name] )
-                library_list[package_name] = globals()[package_name]
+                library_list = dict(library_list.items() + (loadPackage(package_name)).items())
  
     return library_list
