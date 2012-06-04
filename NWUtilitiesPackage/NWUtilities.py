@@ -12,30 +12,100 @@ To do:
 import maya.cmds as cmds
 from vector import *
 from functools import wraps
-        
+
+# ------------------------
 # lib functions
+# ------------------------
 def getFirst(array):
     try:
         return array[0]
     except:
         error("Error getting first element of object :" + array )
+# ------------------------
+# string functions 
+# ------------------------
+def getPrefixByChar(name, char):
+    split = name.split(char)
+    return split[0]
 
+def getPrefix(name):
+    return getPrefixByChar(name, "_")
+
+def getSuffixByChar(name, char):
+    split = name.split(char)
+    return split[len(split)-1]
+
+def getSuffix(name):
+    return getSuffixByChar(name, "_")   
+
+def removeSuffixByChar(name, char):
+    split = name.split(char)
+    ret= ""
+    if len(split) == 1:
+        return split[0]
+    for x in range(len(split)-1):
+        if x != (len(split)-2):
+            ret += (split[x] + "_")
+        else:
+            ret += (split[x])
+    return ret
+
+def removeSuffix(name):
+    return removeSuffixByChar(name, "_")
+
+def removePrefixByChar(name,char):
+    split = name.split(char)
+    ret= ""
+    if len(split) == 1:
+        return split[0]
+    for x in range(1,len(split)):
+        if x != (len(split)-1):
+            ret += (split[x] + "_")
+        else:
+            ret += (split[x])
+    return ret
+    
+def removePrefix(name):
+    return removePrefixByChar(name,"_")
+# ------------------------
+# Transform functions
+# ------------------------
+def match(source, target , args):
+    functArgs = {"t":0, "r":0, "s":0, "all":0, "mo":0}
+    functArgs =  dict(functArgs.items() + args.items())
+    mainOff = functArgs["mo"]
+    
+    if functArgs["t"] == 1:
+        pntConst = cmds.pointConstraint( target, source,  mo = mainOff )
+        cmds.delete( pntConst )
+    if functArgs["r"] == 1:
+        oriConst = cmds.orientConstraint( target, source,  mo = mainOff )
+        cmds.delete( oriConst )
+    if functArgs["s"] == 1:
+        scaConst = cmds.scaleConstraint(  target, source, mo = mainOff )
+        cmds.delete( scaConst )
+    if functArgs["all"] == 1:
+        parConst = cmds.parentConstraint( target, source,  mo = mainOff )
+        cmds.delete( parConst )
+    
+# ------------------------
 #attribute functions
+# ------------------------
 def addStringAttribute(node,attr,data):
     cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
     cmds.setAttr((node+"." + attr), data, type="string")
-    
+
 def addStringArrayAttribute(node,attr,data):
     cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
     cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
-#storage functions        
-def dataExists(node, attr):
-    if cmds.attributeQuery( attr, node= node,exists =True ):
-        return True;
-    else:
-        return False;
-        
+
+# ------------------------
+# storage functions
+# ------------------------
 def dataExistsWrapper(funct):
+    """
+        simple wrapper to check data exists before accessing it
+    """
     @wraps(funct)
     def wrapper(*args, **kwds):
         if dataExists(args[0],args[1]):
@@ -44,15 +114,29 @@ def dataExistsWrapper(funct):
         else:
             cmds.error(("Data not found for: " + args[0] + "." + args[1]))
     return wrapper
-    
+
+def dataExists(node, attr):
+    """
+        Checks if attribute exists
+    """
+    if cmds.attributeQuery( attr, node= node,exists =True ):
+        return True;
+    else:
+        return False;
+
 def storeString(node, attr, data):
+    """
+        Store string on node
+    """
     if dataExists(node, attr):
         cmds.setAttr((node+"." + attr), data, type="string")
     else:
         addStringAttribute(node,attr,data)
     
 def storeStringArray(node, attr, data):
-    #if container exists store variable
+    """
+        Store string on node
+    """
     if dataExists(node, attr):
             cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
     else:
@@ -79,8 +163,9 @@ def getArgs(node, attr):
 @dataExistsWrapper
 def getKwargs(node, attr):
     pass
-    
+# ------------------------
 #starter functions
+# ------------------------
 def createStarterChain( name, args ):
         'Creates a default starters'
         rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
@@ -111,8 +196,6 @@ def createStarterChain( name, args ):
 
 def createStarter( name, args ):
         'Creates a default starters'
-        
-        #rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
         J = []
         functArgs = {"shape":"cube", "size":1, "t":0, "r":0, "s":0}
         functArgs =  dict(functArgs.items() + args.items())
@@ -157,9 +240,11 @@ def createStarter( name, args ):
             storeString(starter, "starter", "")
         return J
 
-#control functiols
+#control functions
 def createAxisContols(name, args):
-        'Creates controls to move object along its axis'
+        """
+            creates a control with sub controls limited to move only in one axis each
+        """
         J=[]
         X=[]
         Y=[]
@@ -167,8 +252,6 @@ def createAxisContols(name, args):
         functArgs = {"axis":"xyz", "size":1}
         functArgs =  dict(functArgs.items() + args.items())
         child=None
-        
-        print functArgs
         
         xName = removeSuffix(name) + "X"
         yName = removeSuffix(name) + "Y"
@@ -233,9 +316,11 @@ def createAxisContols(name, args):
         J.append(ctlGrp) 
         J = J + X + Y + Z
         return J
+# ------------------------
+# Control functions
+# ------------------------
 def createControl( name, args ):
         'Creates a default control'
-        
         J =[]
         functArgs = {"shape":"circle", "size":1}
         functArgs =  dict(functArgs.items() + args.items())
@@ -245,6 +330,8 @@ def createControl( name, args ):
                 ctl = circleCtl( name, functArgs["size"] )
         elif(functArgs["shape"] == "arrow"):
                 ctl = arrowCtl( name, functArgs )
+        elif(functArgs["shape"] == "locator"):
+                ctl = locatorCtl( name, functArgs )
         else:
                 print "Shape not supported...\n"
                 return 0
@@ -257,20 +344,20 @@ def createControl( name, args ):
 def shapeCtl( name, shape ):
         'Creates ctl with shape given'
         J=[]
-        curve =(cmds.curve( n =(name + "_CTL"), d= 1, p= shape ) )
-        grp = cmds.group( curve, n = (name + "_GRP"))
+        ctl =(cmds.curve( n =(name + "_CTL"), d= 1, p= shape ) )
+        grp = cmds.group( ctl, n = (name + "_GRP"))
         cmds.xform(grp, piv= [0,0,0] )
-        J.append(curve)
+        J.append(ctl)
         J.append(grp)
         return J
 
 def locatorCtl( name, args ):
         'Creates locator ctl'
         J=[]
-        curve =(cmds.curve( n =(name + "_CTL"), d= 1, p= shape ) )
-        grp = cmds.group( curve, n = (name + "_GRP"))
+        ctl = getFirst(cmds.spaceLocator( n =(name + "_CTL") ) )
+        grp = cmds.group( ctl, n = (name + "_GRP"))
         cmds.xform(grp, piv= [0,0,0] )
-        J.append(curve)
+        J.append(ctl)
         J.append(grp)
         return J
         
@@ -290,7 +377,7 @@ def arrowCtl( name, args ):
 def circleCtl( name, radius ):
         'Creates arrow control'
         J=[]
-        curve= cmds.circle( (name+ "_CTL"), c= [0, 0, 0], nr= [0, 1, 0], sw= 360, r= radius, d= 3, ut= 0, tol= 0.01 ,s= 8, ch=1)
+        curve= getFirst(cmds.circle( n = (name+ "_CTL"), c= [0, 0, 0], nr= [0, 1, 0], sw= 360, r= radius, d= 3, ut= 0, tol= 0.01 ,s= 8, ch=1))
         grp = cmds.group( curve, n = (name + "_GRP"))
         J.append(curve)
         J.append(grp)
@@ -311,8 +398,9 @@ def cubeCtl( name, functArgs ):
         J.append(ctl)
         J.append(grp)
         return J
-        
+# ------------------------
 # Ik functions
+# ------------------------
 def createIkHandle(name, joints, functArgs):
     'Creates Ik handle for three joints'
     args = {"solver":"ikRPsolver"}
@@ -337,7 +425,8 @@ def createPoleVec(joints, ikHandle, distance):
     poleGrpName = (removeSuffix(ikHandle) + "Pole_GRP")
     poleVecName = (removeSuffix(ikHandle) + "Pole_PVC")
     
-    loc = cmds.spaceLocator(n = locName, p= (poisiton[0], poisiton[1], poisiton[2]) )
+    loc = cmds.spaceLocator(n = locName, p= (0,0,0) )
+    cmds.xform(loc, ws= True, t= (poisiton[0], poisiton[1], poisiton[2]) )
     locGrp = cmds.group(loc, n= poleGrpName)
     
     cmds.poleVectorConstraint( loc , ikHandle, n= poleVecName, w=.1 )
@@ -354,72 +443,29 @@ def getPolePosition(joints, distance):
     joint3Pos = Vector.initList(cmds.xform(joints[2], q= True,t= True,ws= True))
     
     joint1to3Pos = (joint3Pos - joint1Pos)
+    betweenJoint1and3 = joint1Pos + (joint1to3Pos * 0.5)
     # get vector toward joint 2
-    resultVec  = (joint2Pos - joint1to3Pos)
+    resultVec  = Normalize((joint2Pos - betweenJoint1and3))
     # multiply vector by distance
     resultVec = resultVec * distance
     # return joint 2 position + result
     return (joint2Pos + resultVec)
-# string functions 
-def getPrefixByChar(name, char):
-    split = name.split(char)
-    return split[0]
-def getPrefix(name):
-    return getPrefixByChar(name, "_")
-def getSuffixByChar(name, char):
-    split = name.split(char)
-    return split[len(split)-1]
-def getSuffix(name):
-    return getSuffixByChar(name, "_")    
-def removeSuffixByChar(name, char):
-    split = name.split(char)
-    ret= ""
-    if len(split) == 1:
-        return split[0]
-    for x in range(len(split)-1):
-        if x != (len(split)-2):
-            ret += (split[x] + "_")
-        else:
-            ret += (split[x])
-    return ret
-def removeSuffix(name):
-    return removeSuffixByChar(name, "_")
-def removePrefixByChar(name,char):
-    split = name.split(char)
-    ret= ""
-    if len(split) == 1:
-        return split[0]
-    for x in range(1,len(split)):
-        if x != (len(split)-1):
-            ret += (split[x] + "_")
-        else:
-            ret += (split[x])
-    return ret
-    
-def removePrefix(name):
-    return removePrefixByChar(name,"_")
-    """split = name.split("_")
-    ret= ""
-    if len(split) == 1:
-        return split[0]
-    for x in range(1,len(split)):
-        if x != (len(split)-1):
-            ret += (split[x] + "_")
-        else:
-            ret += (split[x])
-    return ret"""
-# heirarchy function
+# ------------------------
+# heirarchy functions
+# ------------------------
 def getShape(obj):
     relatives = cmds.listRelatives(obj,s=True,c=True)
     return relatives[0]
-    
-#curve functions
+# ------------------------
+# curve functions
+# ------------------------
 def getCvNo(curve):
     degree = cmds.getAttr("curve1.degree")
     spans = cmds.getAttr("curve1.spans")
     return (degree + spans)
-    
-#joint functions
+# ------------------------
+# joint functions
+# ------------------------
 def createChain(chainNo, ChainName):
         'Creates a chain of joints'
         joints = []     
@@ -440,8 +486,9 @@ def duplicateChain(name , chainJoints):
             cmds.parent(joints[jointNo - x], joints[jointNo - (x + 1)])
         
         return joints
-
+# ------------------------
 # attribute functions
+# ------------------------
 def setColour(obj, colour):
     result = None
     try:
@@ -499,27 +546,9 @@ def lockHide(obj, args):
             cmds.setAttr( (obj + ".v"), l = True )
         if functArgs["h"] == 1:
             cmds.setAttr( (obj + ".v"), cb = False , k = False )
-
-# transform functions
-def match(target, source, args):
-    functArgs = {"t":0, "r":0, "s":0, "all":0, "mo":0}
-    functArgs =  dict(functArgs.items() + args.items())
-    mainOff = functArgs["mo"]
-    
-    if functArgs["t"] == 1:
-        pntConst = cmds.pointConstraint( target, source,  mo = mainOff )
-        cmds.delete( pntConst )
-    if functArgs["r"] == 1:
-        oriConst = cmds.orientConstraint( target, source,  mo = mainOff )
-        cmds.delete( oriConst )
-    if functArgs["s"] == 1:
-        scaConst = cmds.scaleConstraint(  target, source, mo = mainOff )
-        cmds.delete( scaConst )
-    if functArgs["all"] == 1:
-        parConst = cmds.parentConstraint( target, source,  mo = mainOff )
-        cmds.delete( parConst )
-
+# ------------------------
 # arg functions
+# ------------------------
 def checkArgs(argNames, args):
     if len(argNames) != len(args):
         cmds.error("Number of args and arg names do not match.")
@@ -540,8 +569,34 @@ def getArg(argName, arg):
         return arg[argName]
     else:
         return 0
-
+# ------------------------
 # constraint functions
+# ------------------------
+def constrain(*args , **kwargs):
+    """
+        constrains target, aim constraint requires more flags
+    """
+    influenceNo = (len(args) -1)
+    sources = args[:-1]
+    target = args[influenceNo]
+    defaultName = removeSuffix(target)
+    
+    functArgs = {"t":0, "r":0, "s":0, "all":0, "aim":0, "mo":0, "name": defaultName}
+    functArgs =  dict(functArgs.items() + kwargs["args"].items())
+    mainOff = functArgs["mo"]
+    
+    if functArgs["t"] == 1:
+        constrain = cmds.pointConstraint( args, n = (functArgs["name"] + "_PNT"),  mo = mainOff )
+    if functArgs["r"] == 1:
+        constrain = cmds.orientConstraint( args, n = (functArgs["name"]+ "_ORC"),  mo = mainOff )
+    if functArgs["s"] == 1:
+        constrain = cmds.scaleConstraint(  args, n = (functArgs["name"]+ "_SCT"), mo = mainOff )
+    if functArgs["all"] == 1:
+        constrain = cmds.parentConstraint( args, n = (functArgs["name"]+ "_PCT"),  mo = mainOff )
+    if functArgs["aim"] == 1:
+        constrain = cmds.aimConstraint( args, n = (functArgs["name"]+ "_AIM"),  mo = mainOff )
+    return constrain
+
 def matrixConstraint(parent , child, mainOff, args):
     # Check plugin is loaded 
     if cmds.pluginInfo("decomposeMatrix",q= True,l=True) == 0:

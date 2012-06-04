@@ -11,10 +11,8 @@ class Vector:
         "Initialize from list"
         if len(inList) != 3:
             error( "List must contain 3 values")
-        cls.x = float(inList[0])
-        cls.y = float(inList[1])
-        cls.z = float(inList[2])
-        return cls
+        return cls(float(inList[0]),float(inList[1]),float(inList[2])) 
+        
     def __add__(self, val):
         return Vector( self.x + val[0], self.y + val[1],self.z + val[2] )
     
@@ -73,7 +71,6 @@ class Vector:
         
     def __str__(self):
         return "(" + str(self.x) + "," + str(self.y) + "," + str(self.z)+ ")"
-Point = Vector
         
 def DistanceSqrd( point1, point2 ):
     'Returns the distance between two points squared. Marginally faster than Distance()'

@@ -28,10 +28,7 @@ class NWHingeJoints(NWModule.NWModule):
                 end  = util.createStarter((self.name + "End"), {"shape":"sphere", "size": 0.5})
                 
                 # manage starter joints
-                joints = []
-                joints.append(base[2])
-                joints.append(middle[2])
-                joints.append(end[2])
+                joints = [base[2], middle[2],end[2]]
                 cmds.parent(joints[2], joints[1])
                 cmds.parent(joints[1], joints[0])
                 cmds.parent(joints[0], jointGrp)
@@ -40,23 +37,19 @@ class NWHingeJoints(NWModule.NWModule):
                 args = {"shape":"arrow", "size":0.5}
                 starterArrow = util.createControl( (self.name + "Direction"), args )
                 cmds.rotate( 0, 90, 0 , starterArrow[1])
-                args = {"all" : 1, "mo" : 0}
-                cmds.cycleCheck( e= 0)
-                util.match(joints[0], base[0], args)
-                util.match(joints[1], middle[0], args)
-                util.match(joints[2], end[0], args)
-                cmds.cycleCheck( e= 1)
                 args = {"shape":"arrow", "size":0.5}
+                
+                # create axis control
                 axisCtl = util.createAxisContols((self.name + "axisCtl"), args )
-
+                
                 # create constraints                
-                baseConst = cmds.pointConstraint(base[0], joints[0], n = (self.name + "BaseConst" + "_PNT") ) 
-                endConst =cmds.pointConstraint(end[0], joints[2], n = (self.name + "EndConst" + "_PNT") )
-                middleConst =cmds.pointConstraint(middle[0], joints[1], n = (self.name + "MiddleConst" + "_PNT") )
-                baseEndConst = cmds.pointConstraint(end[0], base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_PNT") )
+                #baseConst = util.constrain(base[0], joints[0],{ "t":1, "name":(self.name + "BaseConst" ) })
+                #endConst =util.constrain(end[0], joints[2], { "t":1, "name":(self.name + "EndConst") })
+                #middleConst =util.constrain(middle[0], joints[1], { "t":1, "name":(self.name + "MiddleConst")} )
+                baseEndConst = util.constrain(end[0], base[0], axisCtl[0], args={ "t":1, "name":(self.name + "BaseEndConst" )} )
                 baseEndAimConst = cmds.aimConstraint(base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_AIM") )
+                arrowEndConst = util.constrain(base[0], starterArrow[1], args={ "t":1, "name":(self.name + "ArrowConst")} )
                 arrowAimConst = cmds.aimConstraint(end[0], starterArrow[1], n = (self.name + "ArrowConst" + "_AIM") )
-                arrowEndConst = cmds.pointConstraint(base[0], starterArrow[1], n = (self.name + "ArrowConst" + "_PNT") )
                 
                 util.lockHide(base[0], {"s":1,"v":1, "l":1, "h":1})
                 util.lockHide(middle[0], {"r":1,"s":1,"v":1, "l":1, "h":1})
@@ -84,6 +77,7 @@ class NWHingeJoints(NWModule.NWModule):
                 rootGrp = cmds.group( n = (self.name + "Build_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
                 setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
+                controlGrp = cmds.group( n = (self.name + "Control_GRP"), em = True, p= rootGrp)
                 
                 # Get starter joints
                 starters  = self.getStarterJoints()
@@ -102,15 +96,28 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 # Create ikHandle
                 handleData = util.createIkHandle(self.name, joints, {})
-                print handleData
-                poleData =  util.createPoleVec(joints, handleData[0])
+                poleData =  util.createPoleVec(joints, handleData[0], 3)
                 
-                cmds.parent(handleData, setupGrp)
+                cmds.parent(handleData[0], setupGrp)
                 cmds.parent(poleData, setupGrp)
                 
                 # Create controls for handle
+                baseCtl = util.createControl( (self.name  + "Base"), {} )
+                ikCtl = util.createControl( (self.name  + "IK"), {"shape":"locator"} )
+                poleCtl = util.createControl( (self.name  + "Pole"), {"shape":"locator"} )
                 
-                #self.buildComplete()
+                args = {"all" : 1, "mo" : 0}
+                util.match(baseCtl[1], joints[0], args)
+                util.match(ikCtl[1], joints[2], args)
+                util.match(poleCtl[1], poleData[0], args)
+                
+                cmds.parent(baseCtl[1], controlGrp)
+                cmds.parent(ikCtl[1], baseCtl[0])
+                cmds.parent(poleCtl[1], baseCtl[0])
+                
+                middleConst =util.constrain(ikCtl[0], handleData[0], { "all":1, "name":(self.name + "IK")} )
+                poleConst =util.constrain(poleCtl[0], poleData[0], { "all":1, "name":(self.name + "Pole")} )
+                
                 cmds.parent(rootGrp, self.rootGrp)
         def connect(self,**kwargs):
             # Get Connection data

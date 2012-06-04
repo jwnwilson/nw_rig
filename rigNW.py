@@ -2,6 +2,7 @@
 
 """
 To do:
+- Need inhertance of modules
 - Need to have multiple instances supported and namespaces for items in containers
 - Lock starter joints only allow manipulation through controls
 - Needs more sub controls for starters
@@ -35,7 +36,7 @@ Add python directory to sys.path if necessary depending on operating system
 if os.name == 'posix':
     FILE_PATH = "/media/WALKMAN/Python/NWRig/"
 elif os.name == 'nt':
-    FILE_PATH = "F:\Documents and Settings\Noel Wilson\My Documents\Git\NWRig"
+    FILE_PATH = "F:/Documents and Settings/Noel Wilson/My Documents/Git/NWRig/"
 if FILE_PATH not in sys.path:
     sys.path.append( FILE_PATH )
 
@@ -88,7 +89,6 @@ class RigNW:
             
         def new(self, **kwards):
             # create overal hierarchy for rig
-            # get name of rig
             self.__init__(self.name, rebuildUI = False)
             name = self.name
             rootMod = NWRoot.NWRoot(self.name)
@@ -114,19 +114,18 @@ class RigNW:
                         return True
                 return False
         def startModule(self,module):
-            # Check that root is built
-            if self.rootExists() == False:
-                self.new()
-            
             # get module name
             nameAttr = self.UI.inputs["starterName"]
             name = cmds.textField(nameAttr, q=True,tx=True)
+            
+            # Check that root is built
+            if self.rootExists() == False:
+                self.new()
             
             # create command
             if not self.moduleExists(name):
                 command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
                 exec command
-                
                 try:
                     mod.start()
                 except:
@@ -137,20 +136,20 @@ class RigNW:
             else:
                 print "Module \"" + name + "\" already exists!";
         def buildModule(self,args):
-                # Check that root is built
-                if self.rootExists() == False:
-                        cmds.error("Root container not found during build")
-                self.refreshModuleList()
-                
                 # get module name
                 functArgs = {"name":"default"}
                 functArgs =  dict(functArgs.items() + args.items())
                 name = functArgs["name"]
                 
+                # Check that root is built
+                if self.rootExists() == False:
+                        cmds.error("Root container not found during build")
+                self.refreshModuleList()
+                
                 # check module exists and build has not been run
                 if self.moduleExists(name) and self.checkMethod(name, "build"):
-                        mod = self.Modules[name]
                         try:
+                            mod = self.Modules[name]
                             mod.build()
                         except:
                             print "Unexpected error:", sys.exc_info()
