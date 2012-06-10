@@ -21,6 +21,9 @@ def getFirst(array):
         return array[0]
     except:
         error("Error getting first element of object :" + array )
+        
+def defaultArgs(defaultArgs, argsDictionary):
+    return dict(defaultArgs.items() + argsDictionary.items())
 # ------------------------
 # string functions 
 # ------------------------
@@ -234,6 +237,9 @@ def createStarter( name, args ):
         newName = J[0].replace("_CTL","_SCTL")
         cmds.rename(J[0],newName)
         J[0] = newName
+        newName = J[1].replace("Ctl_GRP","Sctl_GRP")
+        cmds.rename(J[1],newName)
+        J[1] = newName
         
         #create starter variable
         for starter in J:
@@ -345,7 +351,7 @@ def shapeCtl( name, shape ):
         'Creates ctl with shape given'
         J=[]
         ctl =(cmds.curve( n =(name + "_CTL"), d= 1, p= shape ) )
-        grp = cmds.group( ctl, n = (name + "_GRP"))
+        grp = cmds.group( ctl, n = (name + "Ctl_GRP"))
         cmds.xform(grp, piv= [0,0,0] )
         J.append(ctl)
         J.append(grp)
@@ -355,7 +361,7 @@ def locatorCtl( name, args ):
         'Creates locator ctl'
         J=[]
         ctl = getFirst(cmds.spaceLocator( n =(name + "_CTL") ) )
-        grp = cmds.group( ctl, n = (name + "_GRP"))
+        grp = cmds.group( ctl, n = (name + "Ctl_GRP"))
         cmds.xform(grp, piv= [0,0,0] )
         J.append(ctl)
         J.append(grp)
@@ -378,7 +384,7 @@ def circleCtl( name, radius ):
         'Creates arrow control'
         J=[]
         curve= getFirst(cmds.circle( n = (name+ "_CTL"), c= [0, 0, 0], nr= [0, 1, 0], sw= 360, r= radius, d= 3, ut= 0, tol= 0.01 ,s= 8, ch=1))
-        grp = cmds.group( curve, n = (name + "_GRP"))
+        grp = cmds.group( curve, n = (name + "Ctl_GRP"))
         J.append(curve)
         J.append(grp)
         return J
@@ -386,7 +392,7 @@ def circleCtl( name, radius ):
 def sphereCtl( name, functArgs ):
         J=[]
         ctl = getFirst(cmds.polySphere( n = (name + "_CTL"), r= functArgs["size"], sx= 1, sy= 1, ax= [0, 1, 0], ch= 1))
-        grp = cmds.group( ctl, n = (name + "_GRP"))
+        grp = cmds.group( ctl, n = (name + "Ctl_GRP"))
         J.append(ctl)
         J.append(grp)
         return J
@@ -394,7 +400,7 @@ def sphereCtl( name, functArgs ):
 def cubeCtl( name, functArgs ):
         J=[]
         ctl = getFirst(cmds.polyCube( n = (name + "_CTL"), w= functArgs["size"], h= functArgs["size"], d= 1, sx= 1, sy= 1, sz= 1, ax= [0, 1, 0], cuv= 4, ch= 1))
-        grp = cmds.group( ctl, n = (name + "_GRP"))
+        grp = cmds.group( ctl, n = (name + "Ctl_GRP"))
         J.append(ctl)
         J.append(grp)
         return J
@@ -410,6 +416,7 @@ def createIkHandle(name, joints, functArgs):
         cmds.error("Incorrect number of joints supplied to IkHandle.")
     
     handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["solver"], sj= joints[0], ee= joints[2], p= 2, w= 1)
+    cmds.setAttr((handleData[0] + ".v"), 0)
     
     return handleData
 
@@ -425,11 +432,11 @@ def createPoleVec(joints, ikHandle, distance):
     poleGrpName = (removeSuffix(ikHandle) + "Pole_GRP")
     poleVecName = (removeSuffix(ikHandle) + "Pole_PVC")
     
-    loc = cmds.spaceLocator(n = locName, p= (0,0,0) )
+    loc = getFirst(cmds.spaceLocator(n = locName, p= (0,0,0) ))
     cmds.xform(loc, ws= True, t= (poisiton[0], poisiton[1], poisiton[2]) )
     locGrp = cmds.group(loc, n= poleGrpName)
-    
     cmds.poleVectorConstraint( loc , ikHandle, n= poleVecName, w=.1 )
+    cmds.setAttr((loc + ".v"), 0)
     
     return locGrp
     

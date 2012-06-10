@@ -5,8 +5,6 @@ from functools import wraps
 import NWUtilitiesPackage.NWUtilities as util
 import maya.cmds as cmds
 
-print "gay?"
-
 
 def startPrePost(start):
         @wraps(start)

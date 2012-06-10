@@ -23,9 +23,9 @@ class NWHingeJoints(NWModule.NWModule):
                 jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True )
                 
                 # create starters
-                base = util.createStarter((self.name + "Base"), {"shape":"sphere", "size": 0.5})
-                middle = util.createStarter((self.name + "Middle"), {})
-                end  = util.createStarter((self.name + "End"), {"shape":"sphere", "size": 0.5})
+                base = util.createStarter((self.name + "BaseStarter"), {"shape":"sphere", "size": 0.5})
+                middle = util.createStarter((self.name + "MiddleStarter"), {})
+                end  = util.createStarter((self.name + "EndStarter"), {"shape":"sphere", "size": 0.5})
                 
                 # manage starter joints
                 joints = [base[2], middle[2],end[2]]
@@ -35,7 +35,7 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 # create arrow ctls
                 args = {"shape":"arrow", "size":0.5}
-                starterArrow = util.createControl( (self.name + "Direction"), args )
+                starterArrow = util.createStarter( (self.name + "Direction"), args )
                 cmds.rotate( 0, 90, 0 , starterArrow[1])
                 args = {"shape":"arrow", "size":0.5}
                 
@@ -43,9 +43,6 @@ class NWHingeJoints(NWModule.NWModule):
                 axisCtl = util.createAxisContols((self.name + "axisCtl"), args )
                 
                 # create constraints                
-                #baseConst = util.constrain(base[0], joints[0],{ "t":1, "name":(self.name + "BaseConst" ) })
-                #endConst =util.constrain(end[0], joints[2], { "t":1, "name":(self.name + "EndConst") })
-                #middleConst =util.constrain(middle[0], joints[1], { "t":1, "name":(self.name + "MiddleConst")} )
                 baseEndConst = util.constrain(end[0], base[0], axisCtl[0], args={ "t":1, "name":(self.name + "BaseEndConst" )} )
                 baseEndAimConst = cmds.aimConstraint(base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_AIM") )
                 arrowEndConst = util.constrain(base[0], starterArrow[1], args={ "t":1, "name":(self.name + "ArrowConst")} )
@@ -84,7 +81,7 @@ class NWHingeJoints(NWModule.NWModule):
                 for joint in starters:
                     if cmds.objExists(joint) == False:
                         cmds.error(joint + " not found!")
-
+                
                 # Duplicate joints
                 joints = util.duplicateChain( self.name , starters)
                 cmds.parent(joints[0],jointGrp)
@@ -109,15 +106,15 @@ class NWHingeJoints(NWModule.NWModule):
                 args = {"all" : 1, "mo" : 0}
                 util.match(baseCtl[1], joints[0], args)
                 util.match(ikCtl[1], joints[2], args)
-                util.match(poleCtl[1], poleData[0], args)
+                util.match(poleCtl[1], poleData, args)
                 
-                cmds.parent(baseCtl[1], controlGrp)
-                cmds.parent(ikCtl[1], baseCtl[0])
-                cmds.parent(poleCtl[1], baseCtl[0])
+                util.constrain(baseCtl[0], ikCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
+                util.constrain(baseCtl[0], ikCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
                 
-                middleConst =util.constrain(ikCtl[0], handleData[0], { "all":1, "name":(self.name + "IK")} )
-                poleConst =util.constrain(poleCtl[0], poleData[0], { "all":1, "name":(self.name + "Pole")} )
+                middleConst =util.constrain(ikCtl[0], handleData[0], args={ "all":1, "name":(self.name + "IK")} )
+                poleConst =util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
                 
+                cmds.parent(baseCtl[1], ikCtl[1], poleCtl[1], controlGrp)
                 cmds.parent(rootGrp, self.rootGrp)
         def connect(self,**kwargs):
             # Get Connection data

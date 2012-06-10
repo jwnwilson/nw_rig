@@ -2,6 +2,7 @@
 
 """
 To do:
+- Need inhertance of modules
 - Need to have multiple instances supported and namespaces for items in containers
 - Lock starter joints only allow manipulation through controls
 - Needs more sub controls for starters
@@ -26,7 +27,6 @@ from functools import wraps
 
 PATH_INDICE = 0
 ROOT_PATH=[]
-#LIBRARIES = []
 PACKAGES ={}
 
 """
@@ -75,19 +75,22 @@ class RigNW:
                     self.UI = self.initialiseUI()
                 
         def initialiseUI(self):
-            # read in UIFile
+            """ 
+                read in UIFile
+            """
             windowDir = NWWindowPackage.__path__
             filePath = (windowDir[0] + "/blueprints/" +self.UIFile)
             FILE = open(filePath,"rU")
             command = FILE.read()
             FILE.close()
-            
             exec command
             
             return window
             
         def new(self, **kwards):
-            # create overal hierarchy for rig
+            """
+                create initial hierarchy for rig
+            """
             self.__init__(self.name, rebuildUI = False)
             name = self.name
             rootMod = NWRoot.NWRoot(self.name)
@@ -106,12 +109,14 @@ class RigNW:
             else:
                 return False
         def checkMethod(self,name, method):
-                # Check method variable set after completion
-                if method == "start" and self.Modules[name].startVar == 0:
-                        return True
-                if method == "build" and self.Modules[name].buildVar == 0:
-                        return True
-                return False
+            """
+                Check method variable set after completion
+            """
+            if method == "start" and self.Modules[name].startVar == 0:
+                    return True
+            if method == "build" and self.Modules[name].buildVar == 0:
+                    return True
+            return False
         def startModule(self,module):
             # get module name
             nameAttr = self.UI.inputs["starterName"]
@@ -121,8 +126,8 @@ class RigNW:
             if self.rootExists() == False:
                 self.new()
             
-            # create command
-            if not self.moduleExists(name):
+            # Create command
+            if self.moduleExists(name) == False:
                 command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
                 exec command
                 try:
@@ -133,27 +138,29 @@ class RigNW:
                 cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
                 cmds.container( self.Modules["root"].container, edit=True, an= mod.container)
             else:
-                print "Module \"" + name + "\" already exists!";
+                print ("Module \"" + name + "\" already exists!")
+                
         def buildModule(self,args):
-                # get module name
-                functArgs = {"name":"default"}
-                functArgs =  dict(functArgs.items() + args.items())
-                name = functArgs["name"]
+            # get module name
+            functArgs = {"name":"default"}
+            functArgs =  dict(functArgs.items() + args.items())
+            name = functArgs["name"]
+            
+            # Check that root is built
+            if self.rootExists() == False:
+                    cmds.error("Root container not found during build")
+            self.refreshModuleList()
+            
+            # check module exists and build has not been run
+            if self.moduleExists(name) and self.checkMethod(name, "build"):
+                try:
+                    mod = self.Modules[name]
+                    mod.build()
+                except:
+                    print "Unexpected error:", sys.exc_info()
+            else:
+                print ("Module \"" + name + "\" already built!")
                 
-                # Check that root is built
-                if self.rootExists() == False:
-                        cmds.error("Root container not found during build")
-                self.refreshModuleList()
-                
-                # check module exists and build has not been run
-                if self.moduleExists(name) and self.checkMethod(name, "build"):
-                        try:
-                            mod = self.Modules[name]
-                            mod.build()
-                        except:
-                            print "Unexpected error:", sys.exc_info()
-                else:
-                        print "Module \"" + name + "\" already built!";
         def refreshModuleList(self):
             # check if module list is empty
             if len(self.Modules) == 0:
@@ -161,9 +168,9 @@ class RigNW:
                 if self.rootExists():
                     # populate module list
                     self.Modules = self.getContainerChildren((self.name + "_CNT"))
-                    print self.Modules
                 else:
                     smds.error("Root containter not found for refresh")
+                    
         # Container functions
         def getContainerChildren(self,cont):
             """
@@ -181,6 +188,7 @@ class RigNW:
                 return containers
             else:
                 cmds.error("Root containter not found for refresh")
+                
         def reloadModule(self,module):
             """
                 Gets data from container and rebuilds python object

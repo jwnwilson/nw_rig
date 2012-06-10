@@ -227,7 +227,8 @@ class NWWindow:
         name = name.strip()
         return name
     def loadStarters(self, path):
-        """ Load icon for each module available
+        """ 
+            Load icon for each module available
         """
         # get list of modules to load
         windowDir = path
@@ -240,7 +241,8 @@ class NWWindow:
         FILE.close()
         
     def loadBuilds(self,args):
-        """ Load icon for each module available
+        """ 
+            Load icon for each module available
         """
         functArgs = {"label": "buildList"}
         functArgs =  dict(functArgs.items() + args.items())
@@ -252,9 +254,33 @@ class NWWindow:
             self.loadBuildRecursive(rootContainer,functArgs)
         else:
             pass
+    def loadBuildAttributes(self,args):
+        """
+            Gets selected module and lists attributes
+        """
+        functArgs = util.defaultArgs({"label": "buildAttributes"}, args )
+        buildAttributes = self.layout(functArgs)
+        
+    def updateBuildAttributes(self,args):
+        """
+            Gets selected module and lists attributes
+        """
+        functArgs = util.defaultArgs({}, args )
+        
+        # Check buildIconScroll element exists
+        if cmds.objExists( self.windowElements["buildAttributes"] ) :
+            # Get selected element
+            selectedModule = self.queryInput("buildAttributes")
+            # Clear elements under buildAttributes layout
+            # Query attributes of selected Module
+            # Load text fields
+        else:
+            pass
+        
     def loadBuildRecursive(self,rootContainer,args):
         """Recursively find children build root then build it's children under it"""
         # Build Container
+        iconTextScroll = ""
         buildModuleList = []
         buildModuleList.append(rootContainer)
         # Create list of names use indent in name for children
@@ -263,8 +289,10 @@ class NWWindow:
             # Pass list to text scroll list
             functArgs = {"scrollList": buildModuleList}
             functArgs =  dict(functArgs.items() + args.items())
-            self.iconTextScrollList(functArgs)
+            iconTextScroll = self.iconTextScrollList(functArgs)
         # Build children under rootContainer
+        return iconTextScroll
+        
     def getChildrenRecursive(self,rootContainer):
         buildModuleList = []
         #buildModuleList.append(rootContainer)
@@ -279,6 +307,7 @@ class NWWindow:
                         for recuChild in recuChildren:
                             buildModuleList.append(("   " + recuChild))
         return buildModuleList
+        
     def buildRecursive(self,args):
         """Get selected modules and build them recersively"""
         modules= []
@@ -287,12 +316,14 @@ class NWWindow:
         modules += self.getChildrenRecursive(name)
         for module in modules:
             module = util.removeSuffix(module)
-            self.buildModule({"module": "NWRoot", "name": module})            
+            self.buildModule({"module": "NWRoot", "name": module})   
+            
     def buildModule(self,args):
         """Get selected modules and build them"""
         functArgs = {"name": "default"}
         functArgs =  dict(functArgs.items() + args.items())
         self.NWRigInstance.buildModule( functArgs )
+        
     def loadIcon(self, module, icon):
         """ Load icon
         """
@@ -302,16 +333,3 @@ class NWWindow:
 # just some testing
 if __name__ == "__main__":
     test = NWWindow({})
-    test.layout({"label":"root"})
-    tabs = test.layout({"type":"tabLayout"})
-    #scroll = test.layout({"type":"scrollLayout","parent":tabs, "label":"scroll1"})
-    tab1 = test.layout({"parent":tabs,"label":"layout1","type":"frameLayout"})
-    test.text({})
-    test.button({})
-    test.button({})
-    test.layout({"parent":tabs,"label":"layout2","type":"frameLayout"})
-    test.text({})
-    test.button({})
-    test.button({})
-    test.editLayout("layout2",l="newLayout")
-    test.editLayout(tabs,tabLabel= {tab1:"newTabName"})

@@ -39,6 +39,7 @@ class NWModule:
                 self.buildVar = 0
                 self.connectVar = 0
                 self.name = name
+                self.attributes = {}
                 
                 # create default hierarchy for module
                 self.container = cmds.container( n= (self.name + "_CNT"))
