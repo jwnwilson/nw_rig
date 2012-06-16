@@ -103,11 +103,13 @@ class RigNW:
                 return True
             else:
                 return False
+        
         def rootExists(self):
             if self.moduleExists(self.name):
                 return True
             else:
                 return False
+        
         def checkMethod(self,name, method):
             """
                 Check method variable set after completion

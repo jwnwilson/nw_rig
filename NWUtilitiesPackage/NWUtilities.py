@@ -24,6 +24,14 @@ def getFirst(array):
         
 def defaultArgs(defaultArgs, argsDictionary):
     return dict(defaultArgs.items() + argsDictionary.items())
+
+def checkForKwarg(key, kwargs):
+    if key in kwargs:
+        return kwargs[key]
+# ------------------------
+# window functions
+# ------------------------
+
 # ------------------------
 # string functions 
 # ------------------------
@@ -227,6 +235,7 @@ def createStarter( name, args ):
         #add starter joint
         jnt = cmds.joint( n = ( name + "_SJNT" ), p= (0, 0, 0 ) )
         matrixConstraint(J[0] , jnt, 0, {})
+        template(jnt)
         J.append(jnt)
         
         #parent to root
@@ -496,6 +505,8 @@ def duplicateChain(name , chainJoints):
 # ------------------------
 # attribute functions
 # ------------------------
+def template(obj):
+    cmds.setAttr((obj + ".template"), 1)
 def setColour(obj, colour):
     result = None
     try:
