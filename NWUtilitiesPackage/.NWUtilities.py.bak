@@ -24,9 +24,25 @@ def getFirst(array):
         
 def defaultArgs(defaultArgs, argsDictionary):
     return dict(defaultArgs.items() + argsDictionary.items())
+
 def checkForKwarg(key, kwargs):
     if key in kwargs:
         return kwargs[key]
+    
+def checkForExistingObject(objectName, objectType):
+    """
+        Checks for existing object
+    """
+    if cmds.objExists( objectName ):
+        print "objectType:"
+        print cmds.objectType( objectName )
+        if cmds.objectType( objectName ) == objectType:
+            return True
+    return False
+# ------------------------
+# window functions
+# ------------------------
+
 # ------------------------
 # string functions 
 # ------------------------

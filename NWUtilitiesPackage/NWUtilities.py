@@ -28,6 +28,15 @@ def defaultArgs(defaultArgs, argsDictionary):
 def checkForKwarg(key, kwargs):
     if key in kwargs:
         return kwargs[key]
+    
+def checkForExistingObject(objectName, objectType):
+    """
+        Checks for existing object
+    """
+    if cmds.objExists( objectName ):
+        if cmds.objectType( objectName ) == objectType:
+            return True
+    return False
 # ------------------------
 # window functions
 # ------------------------

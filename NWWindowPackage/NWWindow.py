@@ -16,7 +16,10 @@ To do:
 ICON_PATH = "/icons"
 
 class Element:
-    def __init__(self, key , fullPath , parent , type , **kwargs)
+    def __init__(self, key , fullPath , parent , type , **kwargs):
+        """
+            Class to hold each data for each window element
+        """
         # Each key must be unique
         self.key = key
         # Full path to GUI element
@@ -25,7 +28,7 @@ class Element:
         self.parent = parent
         # type must equal name of function used create element for edit to work
         self.type = type
-        initialize(**kwargs)
+        self.initialize(**kwargs)
 
     def initialize(self):
         pass
@@ -45,11 +48,12 @@ class NWWindow:
         """ Creates a window available arguements include:
            "name","windowWidth","windowHeight","title"
         """
-        self.name = kwds["name"]
+        self.name = "window"
+        self.name = util.checkForKwarg("name",kwds)
         #default args
-        self.windowParamters = {"name":"window","windowWidth":400,"windowHeight":400,"title":"NWWindow"}
+        self.windowParamters = { "name":"window", "windowWidth":400, "windowHeight":400, "title":"NWWindow", "window":""}
         #overwrite defaults
-        self.windowParamters =  dict(self.windowParamters.items() + kwds.items())
+        self.windowParamters =   util.defaultArgs( self.windowParamters , args)
         #stores each element of the window by a unique key
         self.windowElements ={}
         #store key of last used parent element
@@ -61,10 +65,10 @@ class NWWindow:
         # additional list for queryable inputs
         self.inputs= {}
         
-        args= {"h":self.windowElements["windowWidth"], "w":self.windowElements["windowHeight"], "title":self.windowElements["title"]}
-        self.initialiseWindow(args)
+        #args= {"h":self.windowParamters["windowWidth"], "w":self.windowParamters["windowHeight"], "title":self.windowParamters["title"]}
+        self.initialiseWindow(**kwds)
         
-        cmds.showWindow(self.windowElements["window"])
+        cmds.showWindow(self.windowParamters["window"])
         
         # For derived classes
         self.initialise(args, **kwds)
@@ -75,18 +79,20 @@ class NWWindow:
         """
         pass
         
-    def initialiseWindow(self, args):
+    def initialiseWindow(self, **kwds):
         """
             Initialise window
         """
-        functArgs =  defaultArgs({"h":400, "w":400, "title":"WindowNW", "sizeable":True}, args)
+        functArgs =  util.defaultArgs( {"windowHeight":400, "windowWidth":400, "title":"WindowNW", "sizeable":True} , self.windowParamters)
         name = self.windowParamters["name"]
         
         if(cmds.window(name, exists=True)):
             cmds.deleteUI(name)
+            
+        print kwds
         
-        self.windowElements["window"] = cmds.window(name, width = self.windowElements["windowWidth"], height = self.windowElements["windowHeight"], title = self.windowElements["title"], sizeable=functArgs["sizeable"])  
-        self.currentParent = self.windowElements["window"]
+        self.windowParamters["window"] = cmds.window(name, width = functArgs["windowWidth"], height = functArgs["windowHeight"], title = functArgs["title"], sizeable = functArgs["sizeable"],**kwds)  
+        self.currentParent = self.windowParamters["window"]
     
     #def addToLayout(self, control, layout):
     #    self.layouts[util.getSuffixByChar(layout, "|")].buttons.append(control)
@@ -95,14 +101,14 @@ class NWWindow:
         """
             Refreshes window
         """
-        name = self.windowElements["name"]
+        name = self.windowParamters["name"]
         if(cmds.window(name, exists=True)):
             cmds.deleteUI(name)
            
-        self.windowElements["window"] = cmds.window(name, width = self.windowElements["windowWidth"], height = self.windowElements["windowHeight"], title = self.windowElements["title"], sizeable=False)
-        self.currentParent = self.windowElements["window"]
+        self.windowParamters["window"] = cmds.window(name, width = self.windowParamters["windowWidth"], height = self.windowParamters["windowHeight"], title = self.windowParamters["title"], sizeable=False)
+        self.currentParent = self.windowParamters["window"]
         
-        cmds.showWindow(self.windowElements["window"])
+        cmds.showWindow(self.windowParamters["window"])
         
     def saveElement(self,*args):
         """
@@ -111,25 +117,24 @@ class NWWindow:
         # check if element exists
         if self.elementExists(args[0]) == False:
             self.windowElements[args[0]] = Element(*args)
+            return self.windowElements[args[0]]
         else:
             error("Non unique key given for window element")
     
-    def saveInput(self,args*):
+    def saveInput(self,*args):
         """
             Stores window input data in a dict for easy modification
         """
-        self.saveElement(args*)
-        self.inputs[args[0]] = Element(*args)
+        self.inputs[args[0]] = self.saveElement(*args)
         
-    def elementExists(element):
+    def elementExists(self,element):
         """
-            checks if element exists errors if it does
+            checks if element exists
         """
         if self.windowElements.has_key(element):
-            return False
-        else:
-            error( "Element" + element + "already exists in: " + self.windowElements[element] )
             return True
+        else:
+            return False
             
     def inputExists(self, input):
         """
@@ -138,7 +143,7 @@ class NWWindow:
         if self.inputs.has_key(input):
             return False
         else:
-            error( "Input" + input + "already exists in: " + self.inputs[input] )
+            error( "Input :" + input + " already exists" )
             return True
             
     def layout(self,args,**kwargs):
@@ -151,27 +156,28 @@ class NWWindow:
                         "label":"label",
                         "type":"columnLayout",
                         "columnNo":3, 
-                        "parent":self.windowElements["window"], 
-                        "width": self.windowElements["windowWidth"], 
-                        "height":self.windowElements["windowHeight"] }
+                        "parent":self.windowParamters["window"], 
+                        "width": self.windowParamters["windowWidth"], 
+                        "height":self.windowParamters["windowHeight"] }
         functArgs =  util.defaultArgs( defaultArgs, args)
         layoutName = None
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         
         if(functArgs["type"] == "columnLayout"):
-            layoutName = cmds.columnLayout(functArgs["key"], p= functArgs["parent"], adjustableColumn=True , height= functArgs["height"], width= functArgs["width"], kwargs  )
+            layoutName = cmds.columnLayout(functArgs["key"], p= functArgs["parent"], adjustableColumn=True , height= functArgs["height"], width= functArgs["width"], **kwargs  )
         elif(functArgs["type"] == "rowLayout"):
-            layoutName = cmds.rowLayout(functArgs["key"], p= functArgs["parent"] ,numberOfColumns= functArgs["columnNo"], height= functArgs["height"], width= functArgs["width"], kwargs  )
+            layoutName = cmds.rowLayout(functArgs["key"], p= functArgs["parent"] ,numberOfColumns= functArgs["columnNo"], height= functArgs["height"], width= functArgs["width"], **kwargs  )
         elif(functArgs["type"] == "tabLayout"):
-            layoutName = cmds.tabLayout(functArgs["key"], p= functArgs["parent"], kwargs )
+            layoutName = cmds.tabLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         elif(functArgs["type"] == "frameLayout"):
-            layoutName = cmds.frameLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],kwargs )
+            layoutName = cmds.frameLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "formLayout"):
-            layoutName = cmds.formLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],kwargs )
+            layoutName = cmds.formLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "scrollLayout"):
-            layoutName = cmds.scrollLayout(functArgs["key"], p= functArgs["parent"],kwargs )
+            layoutName = cmds.scrollLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         else:
             error("Layout not defined.")
             
@@ -192,12 +198,13 @@ class NWWindow:
         buttonName=None
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error("No parent found for button")
         
-        buttonName = cmds.button(p = functArgs["parent"], l = functArgs["label"], c =functArgs["command"],kwargs )
+        buttonName = cmds.button(p = functArgs["parent"], l = functArgs["label"], c =functArgs["command"],**kwargs )
         self.saveElement(functArgs["key"],buttonName, functArgs["parent"],functArgs["type"])
         
         return buttonName
@@ -216,12 +223,13 @@ class NWWindow:
         buttonName=None
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error("No parent found for button")
         
-        buttonName= cmds.symbolButton(p = functArgs["parent"], c =functArgs["command"], i = functArgs["image"],kwargs )
+        buttonName= cmds.symbolButton(p = functArgs["parent"], c =functArgs["command"], i = functArgs["image"],**kwargs )
         self.saveElement(functArgs["key"],buttonName, functArgs["parent"],functArgs["type"])
         
         return buttonName
@@ -238,12 +246,13 @@ class NWWindow:
         textName=None
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error("No parent found for text")
             
-        textName= cmds.text(p = functArgs["parent"], l = functArgs["label"], kwargs )
+        textName= cmds.text(p = functArgs["parent"], l = functArgs["label"], **kwargs )
         self.saveElement(functArgs["key"], textName, functArgs["parent"],functArgs["type"])
         
         return textName
@@ -260,7 +269,8 @@ class NWWindow:
         textName= None
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error("No parent found for text field")
@@ -269,7 +279,7 @@ class NWWindow:
         #if functArgs["key"] in self.inputs.keys():
         #   textName= cmds.textField(self.inputs[functArgs["key"]], edit= True, p = functArgs["parent"], tx = functArgs["label"] )
         
-        textName= cmds.textField(p = functArgs["parent"], tx = functArgs["label"], kwargs  )
+        textName= cmds.textField(p = functArgs["parent"], tx = functArgs["label"], **kwargs  )
         self.saveInput(functArgs["key"], textName, functArgs["parent"],functArgs["type"])
         
         return textName
@@ -281,11 +291,12 @@ class NWWindow:
                         "label":"textScrollList",
                         "type":"iconTextScrollList",
                         "parent":self.currentParent, 
-                        "scrollList": ["default"] }
+                        "append": ["default"] }
         functArgs =  util.defaultArgs( defaultArgs, args)
         
         # check if element already exists
-        self.elementExists(functArgs["key"])
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + element + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error("No parent found for text field")
@@ -294,55 +305,42 @@ class NWWindow:
         #if functArgs["key"] in self.inputs.keys():
         #    iconTextName= cmds.iconTextScrollList(self.inputs[functArgs["key"]], e= True, ra= True, p = functArgs["parent"], allowMultiSelection= True, append= functArgs["scrollList"] ,**kwargs)
         
-        iconTextName= cmds.iconTextScrollList(p = functArgs["parent"], allowMultiSelection= True, append= functArgs["scrollList"],**kwargs )
+        iconTextName= cmds.iconTextScrollList(p = functArgs["parent"], allowMultiSelection= True, append= functArgs["append"],**kwargs )
         self.saveInput(functArgs["key"], iconTextName, functArgs["parent"],functArgs["type"])
         
         return iconTextName
-    def editLayout(self, key, **kwargs):
+    def editElement(self, key, **kwargs):
         """ 
             Asks for the key of an element to edit
             kwargs is a list of args that are passed into an edit function
             E.g. editLayout("layout1", l="newLayout", width= 500)
         """
         # check for full path
-        self.elementExists( key )
+        if self.elementExists( key ) == False:
+            cmds.error( "Element :" + element + " not found to edit")
         
         element = self.windowElements[key]
-        """if len(labelArray) > 1:
-            label = labelArray[len(labelArray) - 1 ]
-        # edits layout with given args
-        if not self.layouts.has_key(label):
-            cmds.error(("layout not found in editlayout for label: " + label))
-        layoutInst = self.layouts[label]"""
         command = None
         
-        """if(element.layoutType == "column"):
-            command = "cmds.columnLayout(\""+ label +"\",e=True"
-        elif(element.layoutType == "row"):
-            command = "cmds.rowLayout(\""+ label +"\",e=True"
-        elif(element.layoutType == "tab"):
-            command = "cmds.tabLayout(\""+ label +"\",e=True"
-        elif(element.layoutType == "frame"):
-            command = "cmds.frameLayout(\""+ label +"\",e=True"
-        elif(element.layoutType == "form"):
-            command = "cmds.formLayout(\""+ label +"\",e=True"
-        elif(element.layoutType == "scroll"):
-            command = "cmds.scrollLayout(\""+ label +"\",e=True"""
         if element.type != None or element.type != "":
-            command = "cmds."+ element.type +"(\""+ element.fullPath + "\",e=True"
+            command = "ret = cmds."+ element.type +"(\""+ element.fullPath + "\",e=True"
         else:
             error(("layoutType not found when editting layout: " + label))
             
         for key in kwargs:
-            if type(kwargs[key]) == type( () ):
+            if type(kwargs[key]) == type( [] ):
+                command += (", " + key + "= " + str(kwargs[key]))
+            elif type(kwargs[key]) == type( True ):
                 command += (", " + key + "= " + str(kwargs[key]))
             else:
-                command += (", " + key + "= \"" + kwargs[key]+ "\"")
+                command += (", " + key + "= \"" + str(kwargs[key])+ "\"")
+            
         command += " )"
-        
         exec command
         
-    def queryInput(self, inputKey ):
+        return ret
+        
+    def queryInput(self, inputKey, **kwargs ):
         """
             Get UI input type
         """
@@ -352,13 +350,13 @@ class NWWindow:
         
         inputElement = self.inputs[inputKey]
         
-        error("This function requires testing for different UI types")
+        #error("This function requires testing for different UI types")
         
         guiType = cmds.objectTypeUI(inputElement.fullPath)
         if guiType == "outlineControl":
-            returnVal = cmds.iconTextScrollList(inputElement.fullPath, q = True, si = True)
+            returnVal = cmds.iconTextScrollList(inputElement.fullPath, q = True, si = True, **kwargs)
         elif guiType == "field":
-            returnVal = cmds.textField(inputElement.fullPath, q = True, tx = True)
+            returnVal = cmds.textField(inputElement.fullPath, q = True, tx = True, **kwargs)
         
         return returnVal
         

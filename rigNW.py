@@ -2,7 +2,7 @@
 
 """
 To do:
-- Need inhertance of modules
+- Need inhertance of modules - done
 - Need to have multiple instances supported and namespaces for items in containers
 - Lock starter joints only allow manipulation through controls
 - Needs more sub controls for starters
@@ -65,8 +65,9 @@ class RigNW:
             Manages project and loads gui / builds the rig
         """
         def __init__(self, name, **kwargs):
-                classArgs = {"UIFile":"default.txt","rebuildUI":True}
-                classArgs =  dict(classArgs.items() + kwargs.items())
+                classArgs = {"UIFile":"default.py","rebuildUI":True}
+                #classArgs =  dict(classArgs.items() + kwargs.items())
+                classArgs =  util.defaultArgs( classArgs,  kwargs)
                 self.Modules = {}
                 self.Connections = []
                 self.name = name
@@ -120,9 +121,12 @@ class RigNW:
                     return True
             return False
         def startModule(self,module):
+            """
+                Run start method for module
+            """
             # get module name
-            nameAttr = self.UI.inputs["starterName"]
-            name = cmds.textField(nameAttr, q=True,tx=True)
+            windowElement = self.UI.inputs["startTextField"]
+            name = cmds.textField(windowElement.fullPath, q=True,tx=True)
             
             # Check that root is built
             if self.rootExists() == False:
@@ -143,9 +147,12 @@ class RigNW:
                 print ("Module \"" + name + "\" already exists!")
                 
         def buildModule(self,args):
+            """
+                Run build method for module
+            """
             # get module name
-            functArgs = {"name":"default"}
-            functArgs =  dict(functArgs.items() + args.items())
+            defaultArgs = {"name":"default"}
+            functArgs =  util.defaultArgs( defaultArgs,  args)
             name = functArgs["name"]
             
             # Check that root is built
@@ -164,16 +171,24 @@ class RigNW:
                 print ("Module \"" + name + "\" already built!")
                 
         def refreshModuleList(self):
+            """
+                Clears and refreshes module instances
+            """
+            rootCnt = (self.name + "_CNT")
+            rootModule = {}
             # check if module list is empty
             if len(self.Modules) == 0:
                 # Find root and find it's children
                 if self.rootExists():
                     # populate module list
-                    self.Modules = self.getContainerChildren((self.name + "_CNT"))
+                    rootModule["root"] = self.reloadModule(rootCnt)
+                    childModules = self.getContainerChildren(rootCnt)
+                    self.Modules = util.defaultArgs( rootModule,  childModules)
                 else:
                     smds.error("Root containter not found for refresh")
-                    
+        # ------------------------      
         # Container functions
+        # ------------------------
         def getContainerChildren(self,cont):
             """
                 Finds all children containers of passed container
@@ -182,11 +197,13 @@ class RigNW:
             if cmds.objExists(cont):
                 # populate module list
                 contents = cmds.container(cont, query= True, nodeList= True)
-                if contents:
-                    for item in contents:
-                        if cmds.objectType(item) == "container":
-                            containers[util.removeSuffix(item)] = self.reloadModule(item)
-                            containers = dict(containers.items() + (self.getContainerChildren(item)).items())
+                if contents == None:
+                    return containers
+                for item in contents:
+                    if cmds.objectType(item) == "container":
+                        containers[util.removeSuffix(item)] = self.reloadModule(item)
+                        # combine and overwrite lists
+                        containers = dict(containers.items() + (self.getContainerChildren(item)).items())
                 return containers
             else:
                 cmds.error("Root containter not found for refresh")

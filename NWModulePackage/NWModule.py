@@ -42,9 +42,16 @@ class NWModule:
                 self.attributes = {}
                 
                 # create default hierarchy for module
-                self.container = cmds.container( n= (self.name + "_CNT"))
-                self.rootGrp = cmds.group( n = (self.name + "Root_GRP"), em = True )
-                util.storeString(self.container, "type", "NWModule")
+                # if Module already exists use existing objects
+                if util.checkForExistingObject( (self.name + "_CNT"), "container" ):
+                    self.container = (self.name + "_CNT")
+                else:
+                    self.container = cmds.container( n= (self.name + "_CNT"))
+                    util.storeString(self.container, "type", "NWModule")
+                if util.checkForExistingObject( (self.name + "Root_GRP"), "transform" ):
+                    self.rootGrp = (self.name + "Root_GRP")
+                else:
+                    self.rootGrp = cmds.group( n = (self.name + "Root_GRP"), em = True )
                 
                 # class specific init
                 self.initialize()
