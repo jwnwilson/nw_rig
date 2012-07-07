@@ -26,6 +26,7 @@ class NWWindowRigUI(NWWindow):
         """
         self.NWRigInstance = None
         self.NWRigInstance = util.checkForKwarg("NWRig",args)
+        self.filePath = ""
         
     def loadSymbolButton(self, module, icon, function):
         """ 
@@ -58,7 +59,8 @@ class NWWindowRigUI(NWWindow):
         """ 
             Load text in list for each module available
         """
-        defaultArgs = {"key": "buildList"}
+        defaultArgs = {"key": "buildList",
+                        "parent": "buildScroll"}
         functArgs =  util.defaultArgs( defaultArgs, args)
         selectCommand = ("NWRig" + ".UI.updateBuildAttributes({})")
         rootContainer = ""
@@ -89,6 +91,7 @@ class NWWindowRigUI(NWWindow):
         else:
             iconTextScroll = self.iconTextScrollList(functArgs, **kwargs)
         
+        self.inputs[functArgs["key"]] = self.windowElements[functArgs["key"]]
         return iconTextScroll
         
     def recursiveGetModules(self,rootContainer):
@@ -118,7 +121,9 @@ class NWWindowRigUI(NWWindow):
         return moduleList
         
     def buildModules(self,args):
-        """Get selected modules and build them recersively"""
+        """
+            Get selected modules and build them recersively
+        """
         moduleList= []
         
         selectedModule = util.getFirst(self.queryInput("buildList"))
@@ -128,36 +133,46 @@ class NWWindowRigUI(NWWindow):
         for module in moduleList:
             moduleName = util.removeSuffix(module)
             moduleName = moduleName.strip()
-            self.NWRigInstance.buildModule({"name": moduleName})  
-    
-    def loadBuildAttributes(self,args):
-        """
-            Gets selected module and lists attributes
-        """
-        functArgs = util.defaultArgs({"key": "buildAttributes"}, args )
-        buildAttributes = self.layout(functArgs)
-        
-        # Create module name
-        self.text({'label':'build module name','parent':buildAttributes})
+            self.NWRigInstance.buildModule({"name": moduleName})
         
     def updateBuildAttributes(self,args):
         """
             Gets selected module and lists attributes
         """
         functArgs = util.defaultArgs({}, args )
-        
         # Check buildIconScroll element exists
-        if cmds.objExists( self.inputs["buildList"] ) :
-            # Get selected element
+        if self.inputs.has_key("buildList"):
             selectedModule = self.queryInput("buildList")
-            # Clear elements under buildAttributes layout
-            window.editLayout('build module name',l=selectedModule)
-            # Query attributes of selected Module
-            # Load text fields
+            if selectedModule:
+                # Get selected element
+                selectedModule = util.getFirst(selectedModule)
+                # Load selected objects attributes
+                self.loadAttributes(selectedModule.strip())
         else:
             pass
      
-            
+    def loadAttributes(self, module):
+        """
+            Will load attributes of module in gui
+        """
+        if self.windowElements.has_key("buildAttrTitle") == False:
+            self.text({"key":"buildAttrTitle",'label':'build module name','parent':"buildAttributeframe"})
+        if self.windowElements.has_key("buildAttrName") == False:
+            self.text({"key":"buildAttrName",'label':module,'parent':"buildAttributeframe"})
+        else:
+            self.editElement("buildAttrName",label= module)
+        
+    def getFilePath(self):
+        """
+            will get file path from text field
+        """
+        textFieldInput = ""
+        if self.windowElements.has_key("createFilePath"):
+            textFieldInput = self.queryInput("createFilePath")
+            self.filePath = textFieldInput
+        else:
+            cmds.error("Create file path text field not found")
+    
     #def buildModule(self,args):
     #    """
     #        Get selected module and build them

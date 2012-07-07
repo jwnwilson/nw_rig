@@ -14,13 +14,17 @@ from vector import *
 from functools import wraps
 
 # ------------------------
+# file functions
+# ------------------------
+
+# ------------------------
 # lib functions
 # ------------------------
 def getFirst(array):
     try:
         return array[0]
     except:
-        error("Error getting first element of object :" + array )
+        cmds.error("Error getting first element of object :" + str(array) )
         
 def defaultArgs(defaultArgs, argsDictionary):
     return dict(defaultArgs.items() + argsDictionary.items())
@@ -111,10 +115,12 @@ def match(source, target , args):
 # ------------------------
 #attribute functions
 # ------------------------
+def addAttr(object, attrName, attrType, **kwargs):
+    if cmds.objExists( (object + "." + attrName) ) == False:
+        cmds.addAttr(object, ln= attrName, at= attrType, **kwargs)
 def addStringAttribute(node,attr,data):
     cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
     cmds.setAttr((node+"." + attr), data, type="string")
-
 def addStringArrayAttribute(node,attr,data):
     cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
     cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
@@ -625,6 +631,9 @@ def constrain(*args , **kwargs):
     return constrain
 
 def matrixConstraint(parent , child, mainOff, args):
+    """
+        constraints object by a matrix constraint
+    """
     # Check plugin is loaded 
     if cmds.pluginInfo("decomposeMatrix",q= True,l=True) == 0:
         cmds.loadPlugin ("decomposeMatrix")
@@ -639,8 +648,6 @@ def matrixConstraint(parent , child, mainOff, args):
     
     # contraint == parent world * inverse child parent
     matrixMulti1 = cmds.createNode( 'multMatrix', n=( name + "matrixMult1") )    
-    
-    # offset!!! == original child world position
     
     # don't forget to freeze pivots if they are offset shit gets real
     cmds.xform( child, cp = True )

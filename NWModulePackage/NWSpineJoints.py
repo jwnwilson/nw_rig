@@ -6,7 +6,9 @@ except ImportError:
         print "Error"
 
 class NWSpineJoints(NWModule.NWModule):
-        'Creates a joint chain can be used for spine'    
+        """
+            Creates a joint chain can be used for spine
+        """
         def initialize(self):
             # store variables in container
             util.storeString(self.container, "type", "NWSpineJoints")

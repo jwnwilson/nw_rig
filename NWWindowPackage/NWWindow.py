@@ -120,6 +120,13 @@ class NWWindow:
             return self.windowElements[args[0]]
         else:
             error("Non unique key given for window element")
+            
+    def removeElement(self,*args):
+        """
+            remove element from UI
+        """
+        # Hide element?
+        pass
     
     def saveInput(self,*args):
         """
@@ -173,9 +180,9 @@ class NWWindow:
         elif(functArgs["type"] == "tabLayout"):
             layoutName = cmds.tabLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         elif(functArgs["type"] == "frameLayout"):
-            layoutName = cmds.frameLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],**kwargs )
+            layoutName = cmds.frameLayout(functArgs["key"], l= functArgs["label"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "formLayout"):
-            layoutName = cmds.formLayout(functArgs["key"], l= functArgs["key"], p= functArgs["parent"],**kwargs )
+            layoutName = cmds.formLayout(functArgs["key"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "scrollLayout"):
             layoutName = cmds.scrollLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         else:

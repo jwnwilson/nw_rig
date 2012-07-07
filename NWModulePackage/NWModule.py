@@ -1,5 +1,6 @@
 """
-Module that is parent of all other rig module components
+    Module that is parent of all other rig module components
+    
 """
 from functools import wraps
 import NWUtilitiesPackage.NWUtilities as util
@@ -10,7 +11,7 @@ def startPrePost(start):
         @wraps(start)
         def wrapper(*args, **kwds):
             args[0].startPre()
-            print ("calling :" + start.__name__ + " " + args[0].name)
+            print ("calling : Start " + args[0].name)
             ret = start(*args, **kwds)
             args[0].startPost()
             return ret
@@ -22,7 +23,7 @@ def buildPrePost(build):
 	    if args[0].startVar  == False :
                cmds.error(("Start method not run for " + self.name))
             args[0].buildPre()
-            print ("calling :" + build.__name__)
+            print ("calling : Build " + args[0].name)
             ret = build(*args, **kwds)
             args[0].buildPost()
             return ret
@@ -30,6 +31,9 @@ def buildPrePost(build):
 
 
 class NWModule:
+        """
+            Base Class for all modules
+        """
         def __init__(self, name):
                 self.name = name
                 # create update variable if module is reloaded get variables from
@@ -40,6 +44,7 @@ class NWModule:
                 self.connectVar = 0
                 self.name = name
                 self.attributes = {}
+                self.registeredAttributes= []
                 
                 # create default hierarchy for module
                 # if Module already exists use existing objects
@@ -60,6 +65,7 @@ class NWModule:
                 pass
         def startPre(self):
                 pass
+                    
         def buildPre(self):
                 pass
         def startPost(self):
@@ -114,6 +120,46 @@ class NWModule:
 
         def getStarterControls(self):
                 return self.getVariable("starterControls")
+                
+        def createRegistry(self,type):
+                """
+                    Will add message attr to container to connect to objects for commands
+                    to be called on
+                    
+                    Note: Current registry types:
+                    regStartTransform
+                    regStartShape
+                    regBuildTransform
+                    regBuildShape
+                """
+                if cmds.objExists( (self.container + "." + type) ) == False:
+                    cmds.addAttr(self.container, ln = type, at= "message")
+                    self.registeredAttributes.append(type)
+                
+        def registerObjects(self, objects, type):
+                """
+                    will connect object to container attribute so specific commands can be called on it
+                    later
+                """
+                if cmds.objExists( (self.container + "." + type) ):
+                    for object in objects:
+                        util.addAttr(object, type, "message" )
+                        cmds.connectAttr((self.container + "." + type), (object + "." + type) )
+                else:
+                    cmds.error( (self.container + "." + type) + "not found" )
+                    
+        def getRegisteredObjects(self,type):
+                """
+                    Will return objects connected to registry attribute
+                """
+                print self.container
+                if cmds.objExists( (self.container + "." + type) ):
+                    regObjects = cmds.listConnections( (self.container + "." + type) )
+                    for x in range( len(regObjects) ):
+                        regObjects[x] = cmds.plugNode(regObjects[x])
+                    return regObjects
+                else:
+                    return False
 
 # startFunct()
 

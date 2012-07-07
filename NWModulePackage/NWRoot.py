@@ -10,7 +10,9 @@ import NWUtilitiesPackage.NWUtilities as util
         
 
 class NWRoot(NWModule.NWModule):
-        'Creates a root module and heirarchy for other modules to connect to' 
+        """
+            Creates a root module and heirarchy for other modules to connect to
+        """
         def initialize(self):
             # store variables in container
             util.storeString(self.container, "type", "NWRoot")

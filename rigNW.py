@@ -35,7 +35,7 @@ Add python directory to sys.path if necessary depending on operating system
 if os.name == 'posix':
     FILE_PATH = "/media/WALKMAN/Python/NWRig/"
 elif os.name == 'nt':
-    FILE_PATH = "F:/Documents and Settings/Noel Wilson/My Documents/Git/NWRig/"
+    FILE_PATH = "C:/Documents and Settings/Noel Wilson/My Documents/Python/NWRig/"
 if FILE_PATH not in sys.path:
     sys.path.append( FILE_PATH )
 
@@ -88,6 +88,69 @@ class RigNW:
             
             return window
             
+        # ------------------------      
+        # Load save data
+        # ------------------------
+        def loadStartData(self):
+            """
+                Loads start data onto starters
+            """
+            self.UI.getFilePath()
+            filePath = (str(self.UI.filePath) + "start.txt")
+            FILE = open(filePath,"rU")            
+            # for now only dealing with translation and rotation
+            for line in FILE:
+                startDataLine = line.split()
+                startObject = startDataLine[0]
+                translate = [ float( startDataLine[1] ), float( startDataLine[2] ), float( startDataLine[3] ) ]
+                rotate = [ float( startDataLine[4] ), float( startDataLine[5] ), float( startDataLine[6] ) ]
+                scale = [ float( startDataLine[7] ), float( startDataLine[8] ), float( startDataLine[9] ) ]
+                if cmds.objExists(startObject):
+                    cmds.xform(startObject, ws=True, t=translate,ro= rotate,s= scale )
+            FILE.close()
+            print ("Loaded start data from : " + filePath)
+                    
+        def saveStartData(self):
+            """
+                Loads start data onto starters
+            """
+            print "1"
+            objects = self.getRegisteredObjects("regStartTransform")
+            self.UI.getFilePath()  
+            filePath = (str(self.UI.filePath) + "start.txt")
+            writeData = ""
+            # for now only dealing with translation and rotation
+            for object in objects:
+                translate = cmds.xform(object, q=True, t= True, ws=True)
+                rotate = cmds.xform(object, q=True, ro= True, ws=True)
+                scale = cmds.xform(object, q=True, s= True)
+                writeLine = (object + " " + str(translate[0]) + " " + str(translate[1]) + " " + str(translate[2]) + " " +
+                                            str(rotate[0]) + " " + str(rotate[1]) + " " + str(rotate[2]) + " " +
+                                            str(scale[0]) + " " + str(scale[1]) + " " + str(scale[2]) + "\n")
+                writeData += writeLine
+            FILE = open(filePath,"wb")
+            startData = FILE.write(writeData)
+            FILE.close()
+            print ("Saving start data to : " + filePath)
+            
+        def getRegisteredObjects(self, registry):
+            """
+                finds all registered starter objects from containters
+                registry is attribute stored on containers connected to 
+                desired objects
+            """
+            starterTransforms =[]
+            # Get all containers
+            containers = self.getModuleContainers()
+            # iterate through and get staters from attribute connections
+            for container in containers:
+                if cmds.objExists( (container + "." + registry) ):
+                    containerStartTransforms = cmds.listConnections( (container + "." + registry) )
+                    starterTransforms += containerStartTransforms
+            return starterTransforms
+        # ------------------------      
+        # Module functions
+        # ------------------------
         def new(self, **kwards):
             """
                 create initial hierarchy for rig
@@ -96,6 +159,7 @@ class RigNW:
             name = self.name
             rootMod = NWRoot.NWRoot(self.name)
             self.Modules["root"] = rootMod
+            self.Modules[self.name] = rootMod
             self.Modules["root"].start()
             self.rootGrp = self.Modules["root"].rootGrp
             
@@ -110,6 +174,15 @@ class RigNW:
                 return True
             else:
                 return False
+                
+        def getModule(self, name):
+            if cmds.objExists(name + "_CNT"):
+                return (name + "_CNT")
+            else:
+                return ""
+                
+        def getRootModule(self):
+            return self.getModule(self.name)
         
         def checkMethod(self,name, method):
             """
@@ -189,6 +262,25 @@ class RigNW:
         # ------------------------      
         # Container functions
         # ------------------------
+        def getModuleContainers(self):
+            """
+                returns list of all container modules
+            """
+            rootCnt = ""
+            containerList= []
+            # Get root container
+            if self.rootExists():
+                containerList.append( self.getRootModule() )
+                contents= cmds.container(containerList[0], query= True, nodeList= True)
+                if contents == None:
+                    return containerList
+                for item in contents:
+                    if cmds.objectType(item) == "container":
+                        containerList.append( item )
+                return containerList
+                
+            return containerList
+                
         def getContainerChildren(self,cont):
             """
                 Finds all children containers of passed container

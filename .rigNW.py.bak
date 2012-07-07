@@ -88,6 +88,52 @@ class RigNW:
             
             return window
             
+        # ------------------------      
+        # Load save data
+        # ------------------------
+        def loadStartData(self):
+            """
+                Loads start data onto starters
+            """
+            self.UI.getFilePath()
+            filePath = (str(self.UI.filePath) + "start.txt")
+            FILE = open(filePath,"rU")            
+            # for now only dealing with translation and rotation
+            for line in FILE:
+                startDataLine = line.split()
+                startObject = startDataLine[0]
+                translate = [ float( startDataLine[1] ), float( startDataLine[2] ), float( startDataLine[3] ) ]
+                rotate = [ float( startDataLine[4] ), float( startDataLine[5] ), float( startDataLine[6] ) ]
+                scale = [ float( startDataLine[7] ), float( startDataLine[8] ), float( startDataLine[9] ) ]
+                if cmds.objExists(startObject):
+                    cmds.xform(startObject, ws=True, t=translate,ro= rotate,s= scale )
+            FILE.close()
+            print ("Loaded start data from : " + filePath)
+                    
+        def saveStartData(self, objects):
+            """
+                Loads start data onto starters
+            """
+            objects = ["starterNameBaseStarter_SCTL"]
+            self.UI.getFilePath()  
+            filePath = (str(self.UI.filePath) + "start.txt")
+            writeData = ""
+            # for now only dealing with translation and rotation
+            for object in objects:
+                translate = cmds.xform(object, q=True, t= True, ws=True)
+                rotate = cmds.xform(object, q=True, ro= True, ws=True)
+                scale = cmds.xform(object, q=True, s= True)
+                writeLine = (object + " " + str(translate[0]) + " " + str(translate[1]) + " " + str(translate[2]) + " " +
+                                            str(rotate[0]) + " " + str(rotate[1]) + " " + str(rotate[2]) + " " +
+                                            str(scale[0]) + " " + str(scale[1]) + " " + str(scale[2]) + "\n")
+                writeData += writeLine
+            FILE = open(filePath,"wu")
+            startData = FILE.write(writeData)
+            FILE.close()
+            print ("Saving start data to : " + filePath)
+        # ------------------------      
+        # Module functions
+        # ------------------------
         def new(self, **kwards):
             """
                 create initial hierarchy for rig
@@ -96,6 +142,7 @@ class RigNW:
             name = self.name
             rootMod = NWRoot.NWRoot(self.name)
             self.Modules["root"] = rootMod
+            self.Modules[self.name] = rootMod
             self.Modules["root"].start()
             self.rootGrp = self.Modules["root"].rootGrp
             
@@ -175,14 +222,15 @@ class RigNW:
                 Clears and refreshes module instances
             """
             rootCnt = (self.name + "_CNT")
-            modules = {}
+            rootModule = {}
             # check if module list is empty
             if len(self.Modules) == 0:
                 # Find root and find it's children
                 if self.rootExists():
                     # populate module list
-                    modules["root"] = self.reloadModule(rootCnt)
-                    self.Modules = self.getContainerChildren(rootCnt)
+                    rootModule["root"] = self.reloadModule(rootCnt)
+                    childModules = self.getContainerChildren(rootCnt)
+                    self.Modules = util.defaultArgs( rootModule,  childModules)
                 else:
                     smds.error("Root containter not found for refresh")
         # ------------------------      

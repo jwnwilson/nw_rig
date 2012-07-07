@@ -10,15 +10,20 @@ import NWUtilitiesPackage.NWUtilities as util
         
 
 class NWHingeJoints(NWModule.NWModule):
-        'Creates a hinge joints for arms and leg type joints' 
+        """
+            Creates a hinge joints for arms and leg type joints
+        """
         def initialize(self):
-            # store variables in container
-            util.storeString(self.container, "type", "NWHingeJoints")
+                # store variables in container
+                util.storeString(self.container, "type", "NWHingeJoints")
         @NWModule.startPrePost
         def start(self,**kwargs):
                 'Creates a hinge joint can be used for arms or legs'
-                #create container to store all module variables
+                # create registries
+                self.createRegistry("regStartTransform")
+                self.createRegistry("regStartShape")
                 
+                # create Base Groups
                 rootGrp = cmds.group( n = (self.name + "Start_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True )
                 
@@ -64,12 +69,19 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 cmds.parent(rootGrp, self.rootGrp)
                 
-                #store joints and controls
+                # store joints and controls
                 self.storeStarterJoints( joints )
                 self.storeStarterControls( [base[0],middle[0],end[0]] )
                 
+                # register Starters
+                self.registerObject(objects, "regStartTransform")
+                self.registerObject(objects, "regStartShape")
+                
         @NWModule.buildPrePost
         def build(self,**kwargs):
+                # create registries
+                self.createRegistry("regBuildTransform")
+                self.createRegistry("regBuildShape")
                 # Check for module container
                 rootGrp = cmds.group( n = (self.name + "Build_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
@@ -116,13 +128,17 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 cmds.parent(baseCtl[1], ikCtl[1], poleCtl[1], controlGrp)
                 cmds.parent(rootGrp, self.rootGrp)
+                
+                # register Starters
+                self.registerObject(objects, "regBuildTransform")
+                self.registerObject(objects, "regBuildShape")
         def connect(self,**kwargs):
-            # Get Connection data
-            
-            # Check both objects exists
-            
-            # connect objects
-            pass
+                # Get Connection data
+                
+                # Check both objects exists
+                
+                # connect objects
+                pass
 
 """
 Test Code
