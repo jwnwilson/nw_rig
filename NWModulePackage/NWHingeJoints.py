@@ -1,4 +1,6 @@
-"""Requires that Module class is sourced"""
+"""
+    Requires that Module class is sourced
+"""
 
 try:
         import NWModule
@@ -25,7 +27,7 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 # create Base Groups
                 rootGrp = cmds.group( n = (self.name + "Start_GRP"), em = True )
-                jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True )
+                jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True, p = rootGrp )
                 
                 # create starters
                 base = util.createStarter((self.name + "BaseStarter"), {"shape":"sphere", "size": 0.5})
@@ -62,7 +64,7 @@ class NWHingeJoints(NWModule.NWModule):
                 cmds.parent(axisCtl[0],base[0] )
                 cmds.parent(base[1], rootGrp,)
                 cmds.parent(starterArrow[1], rootGrp)
-                cmds.parent(jointGrp, rootGrp)
+                #cmds.parent(jointGrp, rootGrp)
                 
                 cmds.move(0, 0, 0, base[1])
                 cmds.move(0, 0, 2, end[1])
@@ -74,12 +76,11 @@ class NWHingeJoints(NWModule.NWModule):
                 self.storeStarterControls( [base[0],middle[0],end[0]] )
                 
                 # register Starters
-                self.registerObjects((base + middle + end), "regStartTransform")
+                self.registerObjects((base + middle + end + axisCtl), "regStartTransform")
                 #self.registerObject(objects, "regStartShape")
                 
         @NWModule.buildPrePost
         def build(self,**kwargs):
-                print "1"
                 # create registries
                 self.createRegistry("regBuildTransform")
                 self.createRegistry("regBuildShape")
@@ -105,8 +106,9 @@ class NWHingeJoints(NWModule.NWModule):
                 cmds.setAttr((self.name + "Start_GRP" + ".v"), 0)
                 
                 # Create ikHandle
-                handleData = util.createIkHandle(self.name, joints, {})
-                poleData =  util.createPoleVec(joints, handleData[0], 3)
+                polePosition = util.getPolePosition(joints, 3)
+                handleData = util.createIkHandle(self.name, joints)
+                poleData =  util.createPoleVec(joints, handleData[0], polePosition)
                 
                 cmds.parent(handleData[0], setupGrp)
                 cmds.parent(poleData, setupGrp)
@@ -122,7 +124,7 @@ class NWHingeJoints(NWModule.NWModule):
                 util.match(poleCtl[1], poleData, args)
                 
                 util.constrain(baseCtl[0], ikCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
-                util.constrain(baseCtl[0], ikCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
+                util.constrain(baseCtl[0], poleCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
                 
                 middleConst =util.constrain(ikCtl[0], handleData[0], args={ "all":1, "name":(self.name + "IK")} )
                 poleConst =util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
@@ -131,7 +133,6 @@ class NWHingeJoints(NWModule.NWModule):
                 cmds.parent(rootGrp, self.rootGrp)
                 
                 # register Builds
-                print "2"
                 self.registerObjects((baseCtl + ikCtl + poleCtl), "regBuildTransform")
                 #self.registerObjects(objects, "regBuildShape")
         def connect(self,**kwargs):
@@ -148,4 +149,4 @@ Test Code
 if __name__ == "__main__":
         test = NWHingeJoints("test")
         test.start()
-        test.build()
+        #test.build()

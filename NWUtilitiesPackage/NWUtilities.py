@@ -20,6 +20,10 @@ from functools import wraps
 # ------------------------
 # lib functions
 # ------------------------
+def deleteDictKey(dic, key):
+    if dic.has_key(key):
+        del dic[key]
+    return dic
 def getFirst(array):
     try:
         return array[0]
@@ -124,7 +128,21 @@ def addStringAttribute(node,attr,data):
 def addStringArrayAttribute(node,attr,data):
     cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
     cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
-
+def checkSetAttr( attr, value):
+    """
+        checks attribute is setable will set if so returns bool
+    """
+    if  cmds.getAttr( attr, se= True):
+        cmds.setAttr( attr, value )
+        return True
+    return False
+def checkSetCompoundAttr(attr, compoundValue):
+    """
+        checks attribute is setable will set if so
+    """
+    checkSetAttr( (attr + "x"), compoundValue[0])
+    checkSetAttr( (attr + "y"), compoundValue[1])
+    checkSetAttr( (attr + "z"), compoundValue[2])
 # ------------------------
 # storage functions
 # ------------------------
@@ -431,25 +449,29 @@ def cubeCtl( name, functArgs ):
 # ------------------------
 # Ik functions
 # ------------------------
-def createIkHandle(name, joints, functArgs):
-    'Creates Ik handle for three joints'
-    args = {"solver":"ikRPsolver"}
-    functArgs =  dict(functArgs.items() + args.items())
+def createIkHandle(name, joints, **kwargs):
+    """
+        Creates Ik handle for three joints
+    """
+    # Default args
+    args = {"sol":"ikRPsolver"}
+    functArgs =  defaultArgs(args, kwargs)
+    kwargs = deleteDictKey(kwargs, "sol")
     
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
     
-    handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["solver"], sj= joints[0], ee= joints[2], p= 2, w= 1)
+    handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["sol"], sj= joints[0], ee= joints[2],**kwargs)
     cmds.setAttr((handleData[0] + ".v"), 0)
     
     return handleData
 
-def createPoleVec(joints, ikHandle, distance):
-    'Creates pole vector for handle for three joints'
+def createPoleVec(joints, ikHandle, position):
+    """
+        Creates pole vector for handle for three joints
+    """
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
-        
-    poisiton = getPolePosition(joints, distance)
     
     # Create locator to act as pole vector
     locName = (removeSuffix(ikHandle) + "Pole_LOC")
@@ -457,7 +479,7 @@ def createPoleVec(joints, ikHandle, distance):
     poleVecName = (removeSuffix(ikHandle) + "Pole_PVC")
     
     loc = getFirst(cmds.spaceLocator(n = locName, p= (0,0,0) ))
-    cmds.xform(loc, ws= True, t= (poisiton[0], poisiton[1], poisiton[2]) )
+    cmds.xform(loc, ws= True, t= (position[0], position[1], position[2]) )
     locGrp = cmds.group(loc, n= poleGrpName)
     cmds.poleVectorConstraint( loc , ikHandle, n= poleVecName, w=.1 )
     cmds.setAttr((loc + ".v"), 0)
@@ -465,9 +487,12 @@ def createPoleVec(joints, ikHandle, distance):
     return locGrp
     
 def getPolePosition(joints, distance):
-    'Returns best pole vector position'
+    """
+        Returns best pole vector position
+    """
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to getPolePosition.")
+    
     # get position between joint 1 and 3
     joint1Pos = Vector.initList(cmds.xform(joints[0], q= True,t= True,ws= True))
     joint2Pos = Vector.initList(cmds.xform(joints[1], q= True,t= True,ws= True))

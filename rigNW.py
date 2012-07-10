@@ -95,10 +95,11 @@ class RigNW:
             """
                 Loads start data onto starters
             """
+            # open file from path in UI
             self.UI.getFilePath()
             filePath = (str(self.UI.filePath) + "start.txt")
             FILE = open(filePath,"rU")            
-            # for now only dealing with translation and rotation
+            
             for line in FILE:
                 startDataLine = line.split()
                 startObject = startDataLine[0]
@@ -106,7 +107,9 @@ class RigNW:
                 rotate = [ float( startDataLine[4] ), float( startDataLine[5] ), float( startDataLine[6] ) ]
                 scale = [ float( startDataLine[7] ), float( startDataLine[8] ), float( startDataLine[9] ) ]
                 if cmds.objExists(startObject):
-                    cmds.xform(startObject, ws=True, t=translate,ro= rotate,s= scale )
+                    util.checkSetCompoundAttr( (startObject + ".t"), translate )
+                    util.checkSetCompoundAttr( (startObject + ".r"), rotate )
+                    util.checkSetCompoundAttr( (startObject + ".s"), scale )
             FILE.close()
             print ("Loaded start data from : " + filePath)
                     
@@ -114,16 +117,15 @@ class RigNW:
             """
                 Loads start data onto starters
             """
-            print "1"
             objects = self.getRegisteredObjects("regStartTransform")
             self.UI.getFilePath()  
             filePath = (str(self.UI.filePath) + "start.txt")
             writeData = ""
-            # for now only dealing with translation and rotation
+            
             for object in objects:
-                translate = cmds.xform(object, q=True, t= True, ws=True)
-                rotate = cmds.xform(object, q=True, ro= True, ws=True)
-                scale = cmds.xform(object, q=True, s= True)
+                translate = util.getFirst(cmds.getAttr( (object + ".t") ) )
+                rotate = util.getFirst( cmds.getAttr( (object + ".r") ) )
+                scale = util.getFirst( cmds.getAttr( (object + ".s") ) )
                 writeLine = (object + " " + str(translate[0]) + " " + str(translate[1]) + " " + str(translate[2]) + " " +
                                             str(rotate[0]) + " " + str(rotate[1]) + " " + str(rotate[2]) + " " +
                                             str(scale[0]) + " " + str(scale[1]) + " " + str(scale[2]) + "\n")
