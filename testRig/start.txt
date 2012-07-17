@@ -1,0 +1,10 @@
+NWSpineJointsSpineChainStarter0Sctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter0_SCTL -0.411775803628 4.52548339959 -2.98233674607 -116.556168583 53.5884869579 -9.42715747537 1.0 1.0 1.95120132217
+NWSpineJointsSpineChainStarter1_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter1Sctl_GRP 0.0 0.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter2_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter2Sctl_GRP 0.0 0.0 1.0 0.0 -0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter3_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter3Sctl_GRP 0.0 0.0 1.0 0.0 -0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter4_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+NWSpineJointsSpineChainStarter4Sctl_GRP 0.0 0.0 1.0 0.0 -0.0 0.0 1.0 1.0 1.0
