@@ -45,6 +45,36 @@ def checkForExistingObject(objectName, objectType):
         if cmds.objectType( objectName ) == objectType:
             return True
     return False
+def createSingleArray( arrayOfArrays ):
+    """
+    	Condenses array of arrays in array
+    """
+    ret = []
+    
+    for array in arrayOfArrays:
+    	    if type(array) == type([]):
+    	    	    for element in array:
+    	    	    	    ret.append( element )
+	    else:
+	    	    ret.append(array)
+    return ret
+    
+# ------------------------
+# curve functions
+# ------------------------
+def getCurveCVNumber(curve):
+	return ( cmds.getAttr( (curve + ".spans") ) +  cmds.getAttr( (curve + ".degree") ) )
+
+def clusterizeCurve(curve):
+	curveNumber = getCurveCVNumber(curve)
+	curveName = removeSuffix(curve)
+	clusterName = (curveName + "Cluster")
+	clusterList = []
+	for x in range(curveNumber):
+		clusterList.append( createCluster( ( clusterName + str(x)+"_CLS" ), ( curve + ".cv["+ str(x) +"]" ) ) )
+	return clusterList
+	
+    	
 # ------------------------
 # window functions
 # ------------------------
@@ -213,87 +243,94 @@ def getKwargs(node, attr):
 def createStarterChain( name, args ):
         'Creates a default starters'
         rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
-        J = []
-        SCtls =[]
+        ret = {}
+        sctls = []
+        joints = []
         functArgs = {"shape":"sphere", "size":0.5, "chainNo": 4}
         functArgs =  dict(functArgs.items() + args.items())
         
         #create control
         for x in range(functArgs["chainNo"]):
                 starter = createStarter( (name + str(x)), functArgs )
-                cmds.move(0,0,(x*1),starter[1])
-                SCtls.append(starter)
+                sctls.append(starter["sctl"])
+                joints.append(starter["jnt"])
+                cmds.move(0,0,(x*1),starter["sctl"][1])
                 
         # manage joints
-        cmds.parent(SCtls[0][2],rootGrp)
-        cmds.parent(SCtls[0][1],rootGrp)
+        cmds.parent(joints[0],rootGrp)
+        cmds.parent(sctls[0][1],rootGrp)
         
         for x in range(1, functArgs["chainNo"]):
-                cmds.parent(SCtls[x][2],SCtls[x-1][2])
-                cmds.parent(SCtls[x][1],SCtls[x-1][0])
+                cmds.parent(sctls[x][1],sctls[x-1][0])
+                cmds.parent(joints[x],joints[x-1])
                 
-        for x in range(len(SCtls)):
-            for y in range(len(SCtls[x])):
-                J.append(SCtls[x][y])
-                
-        return J
+        ret["sctl"] = sctls
+        ret["jnt"] = joints     
+        return ret
 
 def createStarter( name, args ):
         'Creates a default starters'
-        J = []
+        ret = {}
+        sctl = []
+        jnt = ""
         functArgs = {"shape":"cube", "size":1, "t":0, "r":0, "s":0}
         functArgs =  dict(functArgs.items() + args.items())
         
         #create control
         if(functArgs["shape"] == "cube"):
-                J = cubeCtl( name, functArgs )
+                sctl = cubeCtl( name, functArgs )
         elif(functArgs["shape"] == "sphere"):
-                J = sphereCtl( name, functArgs )
+                sctl = sphereCtl( name, functArgs )
         elif(functArgs["shape"] == "arrow"):
-                J = arrowCtl( name , functArgs )
+                sctl = arrowCtl( name , functArgs )
         elif(functArgs["shape"] == "locator"):
-                J = locatorCtl( name , functArgs )
+                sctl = locatorCtl( name , functArgs )
         else:
                 print "Shape not supported...\n"
                 return 0
                 
         #lock hide unwanted attr
         if functArgs["t"] == 1:
-            lockHide(J[0], {"t":1, "h":1, "l":1})
+            lockHide(sctl[0], {"t":1, "h":1, "l":1})
         if functArgs["r"] == 1:
-            lockHide(J[0], {"r":1, "h":1, "l":1})
+            lockHide(sctl[0], {"r":1, "h":1, "l":1})
         if functArgs["s"] == 1:
-            lockHide(J[0], {"s":1, "h":1, "l":1})
+            lockHide(sctl[0], {"s":1, "h":1, "l":1})
             
         #add starter joint
         jnt = cmds.joint( n = ( name + "_SJNT" ), p= (0, 0, 0 ) )
-        matrixConstraint(J[0] , jnt, 0, {})
-        template(jnt)
-        J.append(jnt)
+        constrain(sctl[0], jnt, args={ "t":1, "mo":0, "name":(name)} )
+        #matrixConstraint(sctl[0] , jnt, 0, {})
+        #template(jnt)
         
         #parent to root
-        cmds.parent(jnt,J[0])
-        #cmds.parent(J[1],rootGrp)
+        cmds.parent(jnt,sctl[0])
+        #cmds.parent(ret["sctl"][1],rootGrp)
         
         #rename suffix
-        newName = J[0].replace("_CTL","_SCTL")
-        cmds.rename(J[0],newName)
-        J[0] = newName
-        newName = J[1].replace("Ctl_GRP","Sctl_GRP")
-        cmds.rename(J[1],newName)
-        J[1] = newName
+        newName = sctl[0].replace("_CTL","_SCTL")
+        cmds.rename(sctl[0],newName)
+        sctl[0] = newName
+        newName = sctl[1].replace("Ctl_GRP","Sctl_GRP")
+        cmds.rename(sctl[1],newName)
+        sctl[1] = newName
         
         #create starter variable
-        for starter in J:
+        """for starter in sctl:
             storeString(starter, "starter", "")
-        return J
+        storeString(jnt, "sjoint", "")"""
+            
+	ret["sctl"] = sctl
+        ret["jnt"] = jnt
+        
+        return ret
 
 #control functions
 def createAxisContols(name, args):
         """
             creates a control with sub controls limited to move only in one axis each
         """
-        J=[]
+        ret = {}
         X=[]
         Y=[]
         Z=[]
@@ -328,7 +365,7 @@ def createAxisContols(name, args):
             setColour(Z[0], "blue")
             cmds.setAttr(( Z[0] + ".tz"), lock=False, cb = True , k = True )
             child = getShape(Z[0])
-            cmds.rotate(180,0,0, (child+".cv[0:7]"))
+            cmds.rotate(180,0,0, (child+".cv[0:7]"))        
             
         #connect control to group to negate movement
         XNeg = cmds.createNode("multDoubleLinear", n=(name+"X_PMA"))
@@ -360,16 +397,25 @@ def createAxisContols(name, args):
         if "z" in functArgs["axis"]:
             cmds.parent(Z[1], ctlGrp)
             
-        J.append(topGrp) 
-        J.append(ctlGrp) 
-        J = J + X + Y + Z
-        return J
+        ret["xctl"] = X
+        ret["yctl"] = Y
+        ret["zctl"] = Z  
+        ret["grp"] = [topGrp, ctlGrp]
+        return ret
 # ------------------------
 # Control functions
 # ------------------------
+def createCluster( clusterName, objs, **kwargs):
+	"""
+		Creates cluster on object / objects
+	"""
+	cluster = (cmds.cluster(objs, name = clusterName, **kwargs))[1]
+	clusterGrp = cmds.group(cluster)
+	
+	return [cluster,clusterGrp]
+
 def createControl( name, args ):
         'Creates a default control'
-        J =[]
         functArgs = {"shape":"circle", "size":1}
         functArgs =  dict(functArgs.items() + args.items())
         
@@ -385,8 +431,8 @@ def createControl( name, args ):
                 return 0
         
         #create control variable
-        for c in ctl:
-            storeString(c, "control", "")
+        """for c in ctl:
+            storeString(c, "control", "")"""
         return ctl
 
 def shapeCtl( name, shape ):
@@ -452,11 +498,15 @@ def cubeCtl( name, functArgs ):
 def createIkHandle(name, joints, **kwargs):
     """
         Creates Ik handle for three joints
+        return values: 
+        IK
+        EFF
     """
     # Default args
     args = {"sol":"ikRPsolver"}
     functArgs =  defaultArgs(args, kwargs)
     kwargs = deleteDictKey(kwargs, "sol")
+    ret = {}
     
     if len(joints) != 3:
         cmds.error("Incorrect number of joints supplied to IkHandle.")
@@ -464,7 +514,31 @@ def createIkHandle(name, joints, **kwargs):
     handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["sol"], sj= joints[0], ee= joints[2],**kwargs)
     cmds.setAttr((handleData[0] + ".v"), 0)
     
-    return handleData
+    ret["IK"] = handleData[0]
+    ret["EFF"] = handleData[1]
+    return ret
+    
+def createSplineIk(name, joints, **kwargs):
+    """
+        Creates spline Ik
+        return values: 
+        IK
+        EFF
+        CRV
+    """
+    # Default args
+    args = {"sol":"ikRPsolver"}
+    functArgs =  defaultArgs(args, kwargs)
+    kwargs = deleteDictKey(kwargs, "sol")
+    ret = {}
+    
+    handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["sol"], sj= joints[0], ee= joints[len(joints)-1],**kwargs)
+    cmds.setAttr((handleData[0] + ".v"), 0)
+    
+    ret["IK"] = handleData[0]
+    ret["EFF"] = handleData[1]
+    ret["CRV"] = handleData[2]
+    return ret
 
 def createPoleVec(joints, ikHandle, position):
     """

@@ -9,7 +9,7 @@ import os
 if os.name == 'posix':
     FILE_PATH = "/media/WALKMAN/Python/NWRig/testRig/"
 elif os.name == 'nt':
-    FILE_PATH = "C:/Documents and Settings/Noel Wilson/My Documents/Python/NWRig/testRig/"
+    FILE_PATH = "F:/Documents and Settings/Noel Wilson/My Documents/Git/NWRig/testRig/"
 
 # Initialize window
 window = NWWindowRigUI.NWWindowRigUI({"name":self.name, "windowWidth":400, "windowHeight":400, "title":"NWWindow", "NWRig":self})
@@ -26,7 +26,7 @@ frame1 = window.layout({'key':'createFrame','parent':methodTab,'label':'create',
 window.text({'key':'createFileText','label':'rig file path:','parent':frame1})
 window.textField({'key':'createFilePath','label':FILE_PATH,'parent':frame1})
 window.text({'key':'createText1','label':'create menu'})
-window.button({'key':'createNewButton','label':'New'})
+window.button({'key':'createNewButton','label':'New',"command":"cmds.file(f= True, new= True)"})
 window.button({'key':'createSaveButton','label':'Save'})
 window.button({'key':'createLoadButton','label':'Load'})
 # -----------------------------
@@ -34,12 +34,38 @@ window.button({'key':'createLoadButton','label':'Load'})
 # -----------------------------
 startTab = window.layout({'key':'startFrame','parent':methodTab,'label':'starter','type':'frameLayout'}, height= 100)
 window.text({'key':'startText1','label':'Load starter'})
-window.text({'key':'startText2','label':'Module name','parent':startTab})
+window.text({'key':'startText2','label':'Module name','parent':startTab},align= "left")
 window.textField({'key':'startTextField','label':'starterName','parent':startTab})
-scroll1 = window.layout({'key':'startScroll','type':'scrollLayout','parent':startTab, 'label':'starters'})
+startForm = window.layout({'key':'startForm','parent':startTab,'type':'formLayout'})
+startScroll1 = window.layout({'key':'startScroll','type':'scrollLayout','parent':startForm, 'label':'starters'},width= 250, height= 150)
 window.loadStartIcons()
-startLoadButton = window.button({'key':'startLoadButton','parent':startTab, 'label':'load',"command":"NWRig.loadStartData()"},width= 100)
-startSaveButton = window.button({'key':'startSaveButton','parent':startTab, 'label':'save',"command":"NWRig.saveStartData()"},width= 100)
+startAttributeframe = window.layout({'key':'startAttributeframe','parent':startForm,'label':'startAttributes','type':'frameLayout'},width= 250,height= 150) 
+startLoadButton = window.button({'key':'startLoadButton','parent':startForm, 'label':'load',"command":"NWRig.loadStartData()"},width= 100)
+startSaveButton = window.button({'key':'startSaveButton','parent':startForm, 'label':'save',"command":"NWRig.saveStartData()"},width= 100)
+startStartButton = window.button({'key':'startStartButton','parent':startForm, 'label':'start',"command":"NWRig.UI.startModules()"},width= 100)
+
+# Edit form layout
+attachForm = [(startScroll1, "top", 5),
+              (startScroll1, "left", 5),
+              (startAttributeframe, "top",5),
+	      (startStartButton, "left",5)]
+attachNone = [(startScroll1, "right"),
+              (startScroll1, "bottom"),
+              (startAttributeframe, "right"),
+              (startAttributeframe, "bottom"),
+	      (startLoadButton, "right"),
+              (startLoadButton, "bottom"),
+	      (startSaveButton, "right"),
+              (startSaveButton, "bottom")]
+attachControl =  [(startAttributeframe, "left", 5 ,startScroll1 ),
+		  (startStartButton, "top",10,startScroll1),
+		  (startLoadButton, "left",100,startStartButton),
+                  (startLoadButton, "top",10,startScroll1),
+		  (startSaveButton, "left",10,startLoadButton),
+		  (startSaveButton, "top",10,startScroll1)]
+                  
+window.editElement("startForm", af= attachForm, an= attachNone, ac= attachControl )
+
 # -----------------------------
 # Build pannel
 # -----------------------------
@@ -47,7 +73,7 @@ buildTab = window.layout({'key':'buildFrame','parent':methodTab,'label':'build',
 window.text({'key':'buildText','label':'build menu'})
 buildForm = window.layout({'key':'buildForm','parent':buildTab,'type':'formLayout'})
 buildScroll1 = window.layout({'key':'buildScroll','type':'scrollLayout','parent':buildForm, 'label':'buildScroll'},width= 250, height= 150)
-buildAttributeframe = window.layout({'key':'buildAttributeframe','parent':buildForm,'label':'buildAttributes','type':'frameLayout'},width= 250,height= 140) 
+buildAttributeframe = window.layout({'key':'buildAttributeframe','parent':buildForm,'label':'buildAttributes','type':'frameLayout'},width= 250,height= 150) 
 buildRefreshButton = window.button({'key':'buildRefreshButton','parent':buildForm, 'label':'refresh',"command":"NWRig.UI.loadModules({})"},width= 100)
 buildButton = window.button({'key':'buildBuildButton','parent':buildForm, 'label':'build',"command":"NWRig.UI.buildModules({})"},width= 100)
 buildLoadButton = window.button({'key':'buildLoadButton','parent':buildForm, 'label':'load'},width= 100)

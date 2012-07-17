@@ -30,28 +30,35 @@ class NWHingeJoints(NWModule.NWModule):
                 jointGrp = cmds.group( n = (self.name + "StartJoint_GRP"), em = True, p = rootGrp )
                 
                 # create starters
-                base = util.createStarter((self.name + "BaseStarter"), {"shape":"sphere", "size": 0.5})
-                middle = util.createStarter((self.name + "MiddleStarter"), {})
-                end  = util.createStarter((self.name + "EndStarter"), {"shape":"sphere", "size": 0.5})
+                baseData = util.createStarter((self.name + "BaseStarter"), {"shape":"sphere", "size": 0.5})
+                middleData = util.createStarter((self.name + "MiddleStarter"), {})
+                endData  = util.createStarter((self.name + "EndStarter"), {"shape":"sphere", "size": 0.5})
+                
+                base = baseData["sctl"]
+                middle = middleData["sctl"]
+                end = endData["sctl"]
                 
                 # manage starter joints
-                joints = [base[2], middle[2],end[2]]
-                cmds.parent(joints[2], joints[1])
-                cmds.parent(joints[1], joints[0])
-                cmds.parent(joints[0], jointGrp)
+                cmds.parent(endData["jnt"], middleData["jnt"])
+                cmds.parent(middleData["jnt"], baseData["jnt"])
+                cmds.parent(baseData["jnt"], jointGrp)
+                
+                joints = [baseData["jnt"],middleData["jnt"], endData["jnt"]]
                 
                 # create arrow ctls
                 args = {"shape":"arrow", "size":0.5}
-                starterArrow = util.createStarter( (self.name + "Direction"), args )
+                starterArrowData = util.createStarter( (self.name + "Direction"), args )
+                starterArrow = starterArrowData["sctl"]
                 cmds.rotate( 0, 90, 0 , starterArrow[1])
                 args = {"shape":"arrow", "size":0.5}
                 
                 # create axis control
-                axisCtl = util.createAxisContols((self.name + "axisCtl"), args )
+                axisCtlData = util.createAxisContols((self.name + "axisCtl"), args )
+                axisCtlGrp = axisCtlData["grp"]
                 
-                # create constraints                
-                baseEndConst = util.constrain(end[0], base[0], axisCtl[0], args={ "t":1, "name":(self.name + "BaseEndConst" )} )
-                baseEndAimConst = cmds.aimConstraint(base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_AIM") )
+                # create constraints   
+                baseEndConst = util.constrain(end[0], base[0], axisCtlGrp[0], args={ "t":1, "name":(self.name + "BaseEndConst" )} )
+                baseEndAimConst = cmds.aimConstraint(base[0], axisCtlGrp[0], n = (self.name + "BaseEndConst" + "_AIM") )
                 arrowEndConst = util.constrain(base[0], starterArrow[1], args={ "t":1, "name":(self.name + "ArrowConst")} )
                 arrowAimConst = cmds.aimConstraint(end[0], starterArrow[1], n = (self.name + "ArrowConst" + "_AIM") )
                 
@@ -60,8 +67,8 @@ class NWHingeJoints(NWModule.NWModule):
                 util.lockHide(end[0], {"r":1,"s":1,"v":1, "l":1, "h":1})
                 
                 cmds.parent(end[1], base[0])
-                cmds.parent(middle[1], axisCtl[1] )
-                cmds.parent(axisCtl[0],base[0] )
+                cmds.parent(middle[1], axisCtlGrp[1] )
+                cmds.parent(axisCtlGrp[0],base[0] )
                 cmds.parent(base[1], rootGrp,)
                 cmds.parent(starterArrow[1], rootGrp)
                 #cmds.parent(jointGrp, rootGrp)
@@ -76,7 +83,9 @@ class NWHingeJoints(NWModule.NWModule):
                 self.storeStarterControls( [base[0],middle[0],end[0]] )
                 
                 # register Starters
-                self.registerObjects((base + middle + end + axisCtl), "regStartTransform")
+                self.registerObjects((base + middle + end + axisCtlData["xctl"] +
+                		      axisCtlData["yctl"] + axisCtlData["zctl"]), 
+                	 	      "regStartTransform")
                 #self.registerObject(objects, "regStartShape")
                 
         @NWModule.buildPrePost
@@ -108,9 +117,9 @@ class NWHingeJoints(NWModule.NWModule):
                 # Create ikHandle
                 polePosition = util.getPolePosition(joints, 3)
                 handleData = util.createIkHandle(self.name, joints)
-                poleData =  util.createPoleVec(joints, handleData[0], polePosition)
+                poleData =  util.createPoleVec(joints, handleData["IK"], polePosition)
                 
-                cmds.parent(handleData[0], setupGrp)
+                cmds.parent(handleData["IK"], setupGrp)
                 cmds.parent(poleData, setupGrp)
                 
                 # Create controls for handle
@@ -126,8 +135,9 @@ class NWHingeJoints(NWModule.NWModule):
                 util.constrain(baseCtl[0], ikCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
                 util.constrain(baseCtl[0], poleCtl[1], args={ "all":1, "mo":1, "name":(self.name + "IK")} )
                 
-                middleConst =util.constrain(ikCtl[0], handleData[0], args={ "all":1, "name":(self.name + "IK")} )
-                poleConst =util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
+                baseConst = util.constrain(baseCtl[0], joints[0], args={ "all":1, "name":(self.name + "Pole")} )
+                middleConst =util.constrain(ikCtl[0], handleData["IK"], args={ "all":1, "name":(self.name + "IK")} )
+                poleConst = util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
                 
                 cmds.parent(baseCtl[1], ikCtl[1], poleCtl[1], controlGrp)
                 cmds.parent(rootGrp, self.rootGrp)
@@ -149,4 +159,4 @@ Test Code
 if __name__ == "__main__":
         test = NWHingeJoints("test")
         test.start()
-        #test.build()
+        test.build()

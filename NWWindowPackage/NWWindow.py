@@ -88,8 +88,6 @@ class NWWindow:
         
         if(cmds.window(name, exists=True)):
             cmds.deleteUI(name)
-            
-        print kwds
         
         self.windowParamters["window"] = cmds.window(name, width = functArgs["windowWidth"], height = functArgs["windowHeight"], title = functArgs["title"], sizeable = functArgs["sizeable"],**kwds)  
         self.currentParent = self.windowParamters["window"]
@@ -163,9 +161,7 @@ class NWWindow:
                         "label":"label",
                         "type":"columnLayout",
                         "columnNo":3, 
-                        "parent":self.windowParamters["window"], 
-                        "width": self.windowParamters["windowWidth"], 
-                        "height":self.windowParamters["windowHeight"] }
+                        "parent":self.windowParamters["window"] }
         functArgs =  util.defaultArgs( defaultArgs, args)
         layoutName = None
         
@@ -174,9 +170,9 @@ class NWWindow:
             cmds.error( "Element :" + element + " already exists")
         
         if(functArgs["type"] == "columnLayout"):
-            layoutName = cmds.columnLayout(functArgs["key"], p= functArgs["parent"], adjustableColumn=True , height= functArgs["height"], width= functArgs["width"], **kwargs  )
+            layoutName = cmds.columnLayout(functArgs["key"], p= functArgs["parent"], adjustableColumn=True , **kwargs  )
         elif(functArgs["type"] == "rowLayout"):
-            layoutName = cmds.rowLayout(functArgs["key"], p= functArgs["parent"] ,numberOfColumns= functArgs["columnNo"], height= functArgs["height"], width= functArgs["width"], **kwargs  )
+            layoutName = cmds.rowLayout(functArgs["key"], p= functArgs["parent"] ,numberOfColumns= functArgs["columnNo"], **kwargs  )
         elif(functArgs["type"] == "tabLayout"):
             layoutName = cmds.tabLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         elif(functArgs["type"] == "frameLayout"):
@@ -364,7 +360,27 @@ class NWWindow:
             returnVal = cmds.iconTextScrollList(inputElement.fullPath, q = True, si = True, **kwargs)
         elif guiType == "field":
             returnVal = cmds.textField(inputElement.fullPath, q = True, tx = True, **kwargs)
+        else:
+            cmds.error("Element type not found during query")
+        return returnVal
         
+    def queryElement(self, elementKey, **kwargs ):
+        """
+            Get UI information
+        """
+        returnVal = ""
+        # Check input exists
+        if self.elementExists(elementKey) == False:
+        	cmds.error("Query element has not found windows element")
+        
+        element = self.windowElements[elementKey]
+        
+        #error("This function requires testing for different UI types")
+        guiType = cmds.objectTypeUI(element.fullPath)
+        if guiType == "staticText":
+            returnVal = cmds.text(element.fullPath, q = True, l = True, **kwargs)
+        else:
+            cmds.error("Element type not found during query")
         return returnVal
         
     def buildWindowFromFile(self,file):

@@ -35,7 +35,7 @@ Add python directory to sys.path if necessary depending on operating system
 if os.name == 'posix':
     FILE_PATH = "/media/WALKMAN/Python/NWRig/"
 elif os.name == 'nt':
-    FILE_PATH = "C:/Documents and Settings/Noel Wilson/My Documents/Python/NWRig/"
+    FILE_PATH = "F:/Documents and Settings/Noel Wilson/My Documents/Git/NWRig/"
 if FILE_PATH not in sys.path:
     sys.path.append( FILE_PATH )
 

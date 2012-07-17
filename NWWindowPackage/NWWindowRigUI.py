@@ -28,17 +28,27 @@ class NWWindowRigUI(NWWindow):
         self.NWRigInstance = util.checkForKwarg("NWRig",args)
         self.filePath = ""
         
-    def loadSymbolButton(self, module, icon, function):
+    def loadSymbolButton(self, module, icon, moduleData):
         """ 
             Load symbolButton
         """
-        defaultArgs = {"key": (module + "SymbolButton"),
+        rowArgs = {"key": (module + "SymbolRow"),
+        		"parent": "startScroll",
+        		'label':(module),
+        		'type':'rowLayout'}
+        buttonArgs = {"key": (module + "SymbolButton"),
                         "image": icon, 
-                        "command": ( "NWRig" + "."+ function + "( '"+ module + "')") }
+                        "command": ( "NWRig" + ".UI.updateStartAttributes({\"module\": \"" + module + "\"})"),
+        		"parent": (module + "SymbolRow") }
+        textArgs = {"key": (module + "SymbolText"),
+        		"parent": (module + "SymbolRow"),
+        		"label" : moduleData}
         #functArgs =  util.defaultArgs( defaultArgs, args)
         
-        symbolBut = self.symbolButton(defaultArgs)
-        
+        #Create start icon
+        symbolFrame = self.layout(rowArgs)
+        symbolBut = self.symbolButton(buttonArgs)
+        symbolText = self.text(textArgs)        
         return symbolBut
     
     def loadStartIcons(self):
@@ -52,7 +62,7 @@ class NWWindowRigUI(NWWindow):
         FILE = open(filePath,"rb")
         for line in FILE:
             args = line.split(' ')
-            self.loadSymbolButton(args[0],(iconPath + args[1].rstrip()), "startModule" )
+            self.loadSymbolButton(args[0],(iconPath + args[1].rstrip()), (" ".join(args[2:])) )
         FILE.close()
         
     def loadModules(self,args,**kwargs):
@@ -134,6 +144,26 @@ class NWWindowRigUI(NWWindow):
             moduleName = util.removeSuffix(module)
             moduleName = moduleName.strip()
             self.NWRigInstance.buildModule({"name": moduleName})
+    
+    def startModules(self):
+	    """
+		Run start method for selected module
+	    """
+	    startModule = self.queryElement("startModuleName")
+	    self.NWRigInstance.startModule(startModule)
+	    
+            
+    def updateStartAttributes(self,args):
+        """
+            Gets selected module and lists attributes
+        """
+        functArgs = util.defaultArgs({}, args )
+        # Check startIconScroll element exists
+        if self.windowElements.has_key("startAttributeframe"):
+        	# Load selected objects attributes
+                self.loadStartAttributes(args["module"])
+        else:
+            pass
         
     def updateBuildAttributes(self,args):
         """
@@ -147,11 +177,11 @@ class NWWindowRigUI(NWWindow):
                 # Get selected element
                 selectedModule = util.getFirst(selectedModule)
                 # Load selected objects attributes
-                self.loadAttributes(selectedModule.strip())
+                self.loadBuildAttributes(selectedModule.strip())
         else:
             pass
      
-    def loadAttributes(self, module):
+    def loadBuildAttributes(self, module):
         """
             Will load attributes of module in gui
         """
@@ -161,6 +191,17 @@ class NWWindowRigUI(NWWindow):
             self.text({"key":"buildAttrName",'label':module,'parent':"buildAttributeframe"})
         else:
             self.editElement("buildAttrName",label= module)
+            
+    def loadStartAttributes(self, module):
+        """
+            Will load attributes of module in gui
+        """
+        if self.windowElements.has_key("startModuleName") == False:
+            self.text({"key":"startModuleName",'label': module,'parent':"startAttributeframe"})
+        else:
+            self.editElement("startModuleName",label= module)
+            
+    	self.editElement("startTextField",tx= module)
         
     def getFilePath(self):
         """
