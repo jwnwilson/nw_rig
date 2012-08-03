@@ -133,21 +133,23 @@ class NWModule:
             # Get output attrs
             outputsAttrs = cmds.listAttr( self.container, st='output_*')
             
-            for attr in inputsAttrs:
-                # get attr key
-                key = util.getSuffix(attr)
-                # get connected obj
-                objs = util.getConnectedObjects( attr )
-                # store obj
-                self.inputs[key] = util.getFirst(objs)
-                
-            for attr in outputsAttrs:
-                # get attr key
-                key = util.getSuffix(attr)
-                # get connected obj
-                objs = util.getConnectedObjects( attr )
-                # store obj
-                self.outputs[key] = util.getFirst(objs)
+            if inputsAttrs:
+                for attr in inputsAttrs:
+                        # get attr key
+                        key = util.getSuffix(attr)
+                        # get connected obj
+                        objs = util.getConnectedObjects( attr )
+                        # store obj
+                        self.inputs[key] = util.getFirst(objs)
+                                
+            if outputsAttrs:
+                for attr in outputsAttrs:
+                        # get attr key
+                        key = util.getSuffix(attr)
+                        # get connected obj
+                        objs = util.getConnectedObjects( attr )
+                        # store obj
+                        self.outputs[key] = util.getFirst(objs)
         
         def storeInput(self,object,key):
             """

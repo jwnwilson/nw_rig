@@ -248,20 +248,31 @@ class NWWindowRigUI(NWWindow):
 			Loads connections of selected module 
 		"""
 		# Input scroll list key 
+		connectionList = []
 		connectInputIconTextScroll = ("connect" + connectionType + "iconTextScroll")
 		connectParent = ("connect" + connectionType + "Scroll")
 		key = ""
 		# Get module 
 		module = ""
+				
+		# Get module connections
+		self.NWRigInstance.updateInputOutput()
+		
 		if connectionType == "Input":
 			module = self.queryElement("connectInputButton")
-		else:
+			command = ("connectionList = self.NWRigInstance.Modules[\""+module+"\"].inputs.keys()")
+			print command
+			print self.NWRigInstance.Modules.keys()
+			print connectionList
+			exec command
+		elif connectionType == "Output":
 			module = self.queryElement("connectOutputButton")
+			command = ("connectionList = self.NWRigInstance.Modules[\""+module+"\"].outputs.keys()")
+			exec command
+		else:
+			cmds.error("connection type not defined")
 		
 		containerName = (module + "_CNT")
-		
-		# Get module connections
-		connectionList = []
 		
 		# Add create functArgs
 		functArgs = {"key": connectInputIconTextScroll, "append": connectionList,
