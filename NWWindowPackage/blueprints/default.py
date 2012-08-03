@@ -110,5 +110,42 @@ window.editElement("buildForm", af= attachForm, an= attachNone, ac= attachContro
 # Connect pannel
 # -----------------------------
 connectTab = window.layout({'key':'connectFrame','parent':methodTab,'label':'connect','type':'frameLayout'})
-connectScroll = window.layout({'key':'connectScroll','type':'scrollLayout','parent':connectTab},width= 250, height= 250)
-connectParentButton = window.button({'key':'connectParentButton','parent':connectTab, 'label':'parent'},width= 100)
+window.text({'key':'connectText','label':'connect menu','parent':connectTab})
+connectForm = window.layout({'key':'connectForm','parent':connectTab,'type':'formLayout','parent':connectTab})
+connectOutputText = window.text({'key':'connectOutputText','label':'output','parent':connectForm})
+connectInputText = window.text({'key':'connectInputText','label':'input','parent':connectForm})
+connectOutputButton = window.button({'key':'connectOutputButton','label':'Output Module','parent':connectForm, "command":"NWRig.UI.loadConnections(\"Output\")"},width= 100)
+connectInputButton = window.button({'key':'connectInputButton','label':'Input Module','parent':connectForm, "command":"NWRig.UI.loadConnections(\"Input\")"},width= 100)
+window.connectPopupMenus(connectInputButton, connectOutputButton)
+connectInputScroll = window.layout({'key':'connectInputScroll','type':'scrollLayout','parent':connectForm},width= 250, height= 250)
+connectOutputScroll = window.layout({'key':'connectOutputScroll','type':'scrollLayout','parent':connectForm},width= 250, height= 250)
+
+connectParentButton = window.button({'key':'connectParentButton','parent':connectForm, 'label':'parent'},width= 100)
+connectConnectButton = window.button({'key':'connectConnectButton','parent':connectForm, 'label':'connect'},width= 100)
+
+# Edit form layout
+attachForm = [(connectInputText, "top", 5),
+              (connectInputText, "left", 5),
+              (connectInputButton, "left", 5),
+              (connectOutputText, "left",5),
+              (connectInputScroll, "top",5),
+              (connectOutputText, "top", 5),
+              (connectConnectButton,"left", 5)]
+attachNone = [(connectInputText, "right"),
+              (connectInputText, "bottom"),
+              (connectInputButton, "right"),
+              (connectInputButton, "bottom"),
+              (connectInputScroll, "right"),
+              (connectInputScroll, "bottom")]
+attachControl =  [(connectInputButton, "top", 10,connectInputText ),
+                  (connectInputScroll,"top", 10,connectInputButton),
+                  (connectOutputText,"left", 150,connectInputButton),
+                  (connectOutputButton,"top", 10,connectOutputText),
+                  (connectOutputButton,"left", 150,connectInputButton),
+                  (connectOutputScroll,"top", 10,connectOutputButton),
+                  (connectOutputScroll,"left", 10,connectInputScroll),
+                  (connectParentButton,"top", 10,connectInputScroll),
+                  (connectParentButton,"left", 10,connectConnectButton),
+                  (connectConnectButton,"top", 10,connectOutputScroll)]
+                  
+window.editElement("connectForm", af= attachForm, an= attachNone, ac= attachControl )

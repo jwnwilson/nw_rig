@@ -24,6 +24,7 @@ def deleteDictKey(dic, key):
     if dic.has_key(key):
         del dic[key]
     return dic
+
 def getFirst(array):
     try:
         return array[0]
@@ -71,7 +72,7 @@ def clusterizeCurve(curve):
 	clusterName = (curveName + "Cluster")
 	clusterList = []
 	for x in range(curveNumber):
-		clusterList.append( createCluster( ( clusterName + str(x)+"_CLS" ), ( curve + ".cv["+ str(x) +"]" ) ) )
+		clusterList.append( createCluster( ( clusterName + str(x) ), ( curve + ".cv["+ str(x) +"]" ) ) )
 	return clusterList
 	
     	
@@ -173,6 +174,18 @@ def checkSetCompoundAttr(attr, compoundValue):
     checkSetAttr( (attr + "x"), compoundValue[0])
     checkSetAttr( (attr + "y"), compoundValue[1])
     checkSetAttr( (attr + "z"), compoundValue[2])
+    
+def getConnectedObjects( attr ):
+    """
+        gets objects connected to attribute
+    """
+    if cmds.objExists( attr ):
+        objects = cmds.listConnections( attr )
+        for x in range( len(objects) ):
+            objects[x] = cmds.plugNode(objects[x])
+        return objects
+    else:
+        return False
 # ------------------------
 # storage functions
 # ------------------------
@@ -409,14 +422,16 @@ def createCluster( clusterName, objs, **kwargs):
 	"""
 		Creates cluster on object / objects
 	"""
-	cluster = (cmds.cluster(objs, name = clusterName, **kwargs))[1]
-	clusterGrp = cmds.group(cluster)
+	cluster = (cmds.cluster(objs, name = (clusterName + "_CLS"), **kwargs))[1]
+	clusterGrp = cmds.group(cluster, name = (clusterName + "_GRP") )
 	
 	return [cluster,clusterGrp]
 
 def createControl( name, args ):
-        'Creates a default control'
-        functArgs = {"shape":"circle", "size":1}
+        """
+            Creates a default control
+        """
+        functArgs = {"shape":"circle", "size":1, "match":""}
         functArgs =  dict(functArgs.items() + args.items())
         
         #create control
@@ -429,14 +444,17 @@ def createControl( name, args ):
         else:
                 print "Shape not supported...\n"
                 return 0
-        
+        if cmds.objExists(functArgs["match"]):
+            match(ctl[1],functArgs["match"],{"all":1})
         #create control variable
         """for c in ctl:
             storeString(c, "control", "")"""
         return ctl
 
 def shapeCtl( name, shape ):
-        'Creates ctl with shape given'
+        """
+            Creates ctl with shape given
+        """
         J=[]
         ctl =(cmds.curve( n =(name + "_CTL"), d= 1, p= shape ) )
         grp = cmds.group( ctl, n = (name + "Ctl_GRP"))
@@ -534,6 +552,7 @@ def createSplineIk(name, joints, **kwargs):
     
     handleData = cmds.ikHandle( n= (name + "_IKH"), sol= functArgs["sol"], sj= joints[0], ee= joints[len(joints)-1],**kwargs)
     cmds.setAttr((handleData[0] + ".v"), 0)
+    handleData[2] = cmds.rename(handleData[2],(name+ "IK_CRV") )
     
     ret["IK"] = handleData[0]
     ret["EFF"] = handleData[1]

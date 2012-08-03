@@ -35,8 +35,9 @@ class NWSpineJoints(NWModule.NWModule):
                 spineChainData = util.createStarterChain( (self.name + "SpineChainStarter"), {"chainNo": 5})
                 spineChainJoints = spineChainData["jnt"]
                 spineChainSctls = spineChainData["sctl"]
+                print spineChainSctls
                 cmds.parent(spineChainJoints[0], jointGrp)
-                cmds.parent(spineChainSctls[1], rootGrp)
+                cmds.parent(spineChainSctls[0][1], rootGrp)
                 
                 cmds.parent(rootGrp, self.rootGrp)
                 
@@ -78,26 +79,26 @@ class NWSpineJoints(NWModule.NWModule):
                 
                 #cmds.ikHandle()
                 handleData = util.createSplineIk(self.name, joints, sol= "ikSplineSolver")
-		clusterList = util.clusterizeCurve( handleData["CRV"] )
-		
-		cmds.parent(handleData["IK"], setupGrp)
-		
-		#create controls
-		print clusterList
-		for cluster in clusterList:
-			clusterName = util.removeSuffix( cluster[0] )
-			clusterCtl = util.createControl( clusterName, {}  )
-			
-			cmds.parent(cluster[1], clusterCtl[0] )
-			cmds.parent(clusterCtl[1], controlGrp )
-			clusterCtls.append(clusterCtl)
-		
+                clusterList = util.clusterizeCurve( handleData["CRV"] )
+                
+                cmds.parent(handleData["IK"], setupGrp)
+                
+                #create controls
+                for cluster in clusterList:
+                    clusterName = util.removeSuffix( cluster[0] )
+                    clusterCtl = util.createControl( clusterName, {"match":cluster[0]}  )
+                    
+                    cmds.parent(cluster[1], clusterCtl[0] )
+                    cmds.parent(clusterCtl[1], controlGrp )
+                    clusterCtls.append(clusterCtl)
+                    
+                # parent controls
+                for x in range(1,  len(clusterCtls) ):
+                    cmds.parent( clusterCtls[x][1], clusterCtls[x-1][0] )
                 cmds.parent(rootGrp, self.rootGrp)
                 
                 # register Builds
-               #self.registerObjects((baseCtl + ikCtl + poleCtl), "regBuildTransform")
-               
-               
+                #self.registerObjects((baseCtl + ikCtl + poleCtl), "regBuildTransform")
 """
 Test Code
 """

@@ -89,7 +89,7 @@ class NWWindow:
         if(cmds.window(name, exists=True)):
             cmds.deleteUI(name)
         
-        self.windowParamters["window"] = cmds.window(name, width = functArgs["windowWidth"], height = functArgs["windowHeight"], title = functArgs["title"], sizeable = functArgs["sizeable"],**kwds)  
+        self.windowParamters["window"] = cmds.window(name, width = functArgs["windowWidth"], height = functArgs["windowHeight"], title = functArgs["title"], sizeable = functArgs["sizeable"], menuBar= True,**kwds)  
         self.currentParent = self.windowParamters["window"]
     
     #def addToLayout(self, control, layout):
@@ -119,12 +119,13 @@ class NWWindow:
         else:
             error("Non unique key given for window element")
             
-    def removeElement(self,*args):
+    def removeElement(self, key):
         """
             remove element from UI
         """
-        # Hide element?
-        pass
+        self.elementExists(key)
+        cmds.deleteUI(self.windowElements[key].fullPath)
+        del self.windowElements[key]
     
     def saveInput(self,*args):
         """
@@ -132,7 +133,7 @@ class NWWindow:
         """
         self.inputs[args[0]] = self.saveElement(*args)
         
-    def elementExists(self,element):
+    def elementExists(self, element):
         """
             checks if element exists
         """
@@ -165,9 +166,8 @@ class NWWindow:
         functArgs =  util.defaultArgs( defaultArgs, args)
         layoutName = None
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
         
         if(functArgs["type"] == "columnLayout"):
             layoutName = cmds.columnLayout(functArgs["key"], p= functArgs["parent"], adjustableColumn=True , **kwargs  )
@@ -200,12 +200,8 @@ class NWWindow:
         functArgs =  util.defaultArgs( defaultArgs, args)
         buttonName=None
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
-        # Check parent exists for button
-        if(functArgs["parent"] == None):
-            cmds.error("No parent found for button")
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
         
         buttonName = cmds.button(p = functArgs["parent"], l = functArgs["label"], c =functArgs["command"],**kwargs )
         self.saveElement(functArgs["key"],buttonName, functArgs["parent"],functArgs["type"])
@@ -225,12 +221,8 @@ class NWWindow:
         functArgs =  util.defaultArgs( defaultArgs, args)
         buttonName=None
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
-        # Check parent exists for button
-        if(functArgs["parent"] == None):
-            cmds.error("No parent found for button")
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
         
         buttonName= cmds.symbolButton(p = functArgs["parent"], c =functArgs["command"], i = functArgs["image"],**kwargs )
         self.saveElement(functArgs["key"],buttonName, functArgs["parent"],functArgs["type"])
@@ -248,12 +240,8 @@ class NWWindow:
         functArgs =  util.defaultArgs( defaultArgs, args)
         textName=None
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
-        # Check parent exists for button
-        if(functArgs["parent"] == None):
-            cmds.error("No parent found for text")
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
             
         textName= cmds.text(p = functArgs["parent"], l = functArgs["label"], **kwargs )
         self.saveElement(functArgs["key"], textName, functArgs["parent"],functArgs["type"])
@@ -271,16 +259,8 @@ class NWWindow:
         functArgs =  util.defaultArgs( defaultArgs, args)
         textName= None
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
-        # Check parent exists for button
-        if(functArgs["parent"] == None):
-            cmds.error("No parent found for text field")
-        
-        # Moving to edit input function
-        #if functArgs["key"] in self.inputs.keys():
-        #   textName= cmds.textField(self.inputs[functArgs["key"]], edit= True, p = functArgs["parent"], tx = functArgs["label"] )
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
         
         textName= cmds.textField(p = functArgs["parent"], tx = functArgs["label"], **kwargs  )
         self.saveInput(functArgs["key"], textName, functArgs["parent"],functArgs["type"])
@@ -297,33 +277,98 @@ class NWWindow:
                         "append": ["default"] }
         functArgs =  util.defaultArgs( defaultArgs, args)
         
-        # check if element already exists
-        if self.elementExists(functArgs["key"]):
-            cmds.error( "Element :" + element + " already exists")
-        # Check parent exists for button
-        if(functArgs["parent"] == None):
-            cmds.error("No parent found for text field")
-        
-        # Moving to edit input function
-        #if functArgs["key"] in self.inputs.keys():
-        #    iconTextName= cmds.iconTextScrollList(self.inputs[functArgs["key"]], e= True, ra= True, p = functArgs["parent"], allowMultiSelection= True, append= functArgs["scrollList"] ,**kwargs)
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
         
         iconTextName= cmds.iconTextScrollList(p = functArgs["parent"], allowMultiSelection= True, append= functArgs["append"],**kwargs )
         self.saveInput(functArgs["key"], iconTextName, functArgs["parent"],functArgs["type"])
         
         return iconTextName
+        
+    def menu(self, args, **kwargs):
+        """
+            Creates menu tabs in the window
+        """
+        defaultArgs = {"key": "key",
+                        "label":"Menu",
+                        "type":"menu",
+                        "parent":self.currentParent}
+        functArgs =  util.defaultArgs( defaultArgs, args)
+        
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
+        
+        menuFullPath= cmds.menu(p = functArgs["parent"], label = functArgs["label"], **kwargs )
+        self.saveElement(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
+        
+        return menuFullPath
+        
+    def popupMenu(self, args, **kwargs):
+    	"""
+    	Creates pop up menu
+    	"""
+    	defaultArgs = {"key": "key",
+                        "type":"menuItem",
+                        "parent":self.currentParent}
+    	functArgs =  util.defaultArgs( defaultArgs, args)
+        
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
+        
+        fullPath= cmds.popupMenu( p= functArgs["parent"], **kwargs )
+        self.saveElement(functArgs["key"], fullPath, functArgs["parent"],functArgs["type"])
+        
+        return fullPath
+        
+    def menuItem(self, args, **kwargs):
+    	"""
+    	   Creates menu item for menu
+    	"""
+    	defaultArgs = {"key": "key",
+                        "label":"MenuItem",
+                        "type":"menuItem",
+                        "parent":self.currentParent}
+        functArgs =  util.defaultArgs( defaultArgs, args)
+        
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
+        
+        menuFullPath= cmds.menuItem(p = functArgs["parent"], label = functArgs["label"], **kwargs )
+        self.saveElement(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
+        
+        return menuFullPath
+        
+    def guiCommandWrapper(self,command, args, **kwards):
+    	"""
+    	   experimental function to wrap any maya command with default arguments
+    	"""
+    	
+    	defaultArgs = {"key": "key",
+                        "label":"default",
+                        "type":"custom",
+                        "parent":self.currentParent}
+        functArgs =  util.defaultArgs( defaultArgs, args)
+        
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
+        
+        fullPath = eval("cmds." + command + "(p = functArgs[\"parent\"], label = functArgs[\"label\"], **kwargs )")
+        self.saveElement(functArgs["key"], fullPath, functArgs["parent"],functArgs["type"])
+        
+        return fullPath
+        
     def editElement(self, key, **kwargs):
         """ 
             Asks for the key of an element to edit
             kwargs is a list of args that are passed into an edit function
             E.g. editLayout("layout1", l="newLayout", width= 500)
         """
+        element = self.windowElements[key]
+        command = None
+        
         # check for full path
         if self.elementExists( key ) == False:
             cmds.error( "Element :" + element + " not found to edit")
-        
-        element = self.windowElements[key]
-        command = None
         
         if element.type != None or element.type != "":
             command = "ret = cmds."+ element.type +"(\""+ element.fullPath + "\",e=True"
@@ -356,7 +401,6 @@ class NWWindow:
         #error("This function requires testing for different UI types")
         
         guiType = cmds.objectTypeUI(inputElement.fullPath)
-        print guiType
         if guiType == "outlineControl":
             returnVal = cmds.iconTextScrollList(inputElement.fullPath, q = True, si = True, **kwargs)
         elif guiType == "field":
@@ -378,8 +422,11 @@ class NWWindow:
         
         #error("This function requires testing for different UI types")
         guiType = cmds.objectTypeUI(element.fullPath)
+        print guiType
         if guiType == "staticText":
             returnVal = cmds.text(element.fullPath, q = True, l = True, **kwargs)
+        elif guiType == "button":
+            returnVal = cmds.button(element.fullPath, q = True, l = True, **kwargs)
         else:
             cmds.error("Element type not found during query")
         return returnVal
@@ -396,6 +443,18 @@ class NWWindow:
         command = FILE.read()
         FILE.close()
         exec command
+        
+    def elementInitializeCheck(self, functArgs ):
+   	"""
+   	   Checks that element does not already exist and has parent to connect to
+   	"""
+   	# check if element already exists
+        if self.elementExists(functArgs["key"]):
+            cmds.error( "Element :" + functArgs["key"] + " already exists")
+        # Check parent exists for button
+        if(functArgs["parent"] == None):
+            cmds.error( ("No parent found for " + functArgs["type"]) )
+   	   
     
 # just some testing
 if __name__ == "__main__":
