@@ -5,29 +5,29 @@ class NWModule:
                 # create update variable if module is reloaded get variables from
                 # container
                 self.update = 0
-                self.startVar = 0
-                self.buildVar = 0
+                self.blueprintVar = 0
+                self.rigVar = 0
                 self.connectVar = 0
                 self.name = name
                 self.container = cmds.container( n= name)
                 
                 # create default hierarchy for module
                 
-        def startComplete(self):
-                #set start to 1 in container and class
-                self.storeVariable("start", "st", "short", 1)
-                self.startVar = 1
+        def blueprintComplete(self):
+                #set blueprint to 1 in container and class
+                self.storeVariable("blueprint", "st", "short", 1)
+                self.blueprintVar = 1
 
-        def buildComplete(self):
-                #set start to 1 in container and class
-                self.storeVariable("build", "bu", "short", 1)
-                self.buildVar = 1
+        def rigComplete(self):
+                #set blueprint to 1 in container and class
+                self.storeVariable("rig", "bu", "short", 1)
+                self.rigVar = 1
                 
-        @startPrePost        
-        def start(self):
+        @blueprintPrePost        
+        def blueprint(self):
             pass
-        @buildPrePost   
-        def build(self):
+        @rigPrePost   
+        def rig(self):
             pass
                 
         def storeVariable(self, attribute, shortAttr, varType, variable):
@@ -53,22 +53,22 @@ class NWModule:
                 else:
                         cmds.error("Container attribute not found.")
 
-        def storeStarterJoints(self, joints):
-                #should check for starter variable
-                self.storeStringArrayVariable("starterJoints", "sj", joints)
+        def storeBlueprinterJoints(self, joints):
+                #should check for blueprinter variable
+                self.storeStringArrayVariable("blueprinterJoints", "sj", joints)
 
-        def getStarterJoints(self):
-                return self.getVariable("starterJoints")
+        def getBlueprinterJoints(self):
+                return self.getVariable("blueprinterJoints")
 
-        def storeStarterControls(self, controls):
-                #should check for starter variable
-                self.storeStringArrayVariable("starterControls", "sc", controls)
+        def storeBlueprinterControls(self, controls):
+                #should check for blueprinter variable
+                self.storeStringArrayVariable("blueprinterControls", "sc", controls)
 
-        def getStarterControls(self):
-                return self.getVariable("starterControls")
+        def getBlueprinterControls(self):
+                return self.getVariable("blueprinterControls")
 
-# startFunct()
+# blueprintFunct()
 
-# buildFunct()
+# rigFunct()
 
 # connectFunct()

@@ -42,7 +42,7 @@ class Layout(Element):
 
 class NWWindow:
     """ 
-        Generic window GUI building class
+        Generic window GUI riging class
     """
     def __init__(self, args, **kwds):
         """ Creates a window available arguements include:
@@ -176,7 +176,7 @@ class NWWindow:
         elif(functArgs["type"] == "tabLayout"):
             layoutName = cmds.tabLayout(functArgs["key"], p= functArgs["parent"], **kwargs )
         elif(functArgs["type"] == "frameLayout"):
-            layoutName = cmds.frameLayout(functArgs["key"], l= functArgs["label"], p= functArgs["parent"],**kwargs )
+            layoutName = cmds.frameLayout(functArgs["key"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "formLayout"):
             layoutName = cmds.formLayout(functArgs["key"], p= functArgs["parent"],**kwargs )
         elif(functArgs["type"] == "scrollLayout"):
@@ -430,7 +430,7 @@ class NWWindow:
             cmds.error("Element type not found during query")
         return returnVal
         
-    def buildWindowFromFile(self,file):
+    def rigWindowFromFile(self,file):
         """ 
             read in UIFile
         """

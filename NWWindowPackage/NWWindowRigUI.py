@@ -17,7 +17,8 @@ To do:
 ICON_PATH = "/icons"
 
 class NWWindowRigUI(NWWindow):
-	""" Creates a class which will create and manage a UI wrapping around maya's
+	""" 
+	Files a class which will file and manage a UI wrapping around maya's
 	functionallity
 	"""
 	def initialise(self,args, **kwds):
@@ -33,25 +34,25 @@ class NWWindowRigUI(NWWindow):
 			Load symbolButton
 		"""
 		rowArgs = {"key": (module + "SymbolRow"),
-				"parent": "startScroll",
+				"parent": "blueprintScroll",
 				'label':(module),
 				'type':'rowLayout'}
 		buttonArgs = {"key": (module + "SymbolButton"),
 						"image": icon, 
-						"command": ( "NWRig" + ".UI.updateStartAttributes({\"module\": \"" + module + "\"})"),
+						"command": ( "NWRig" + ".UI.updateBlueprintAttributes({\"module\": \"" + module + "\"})"),
 				"parent": (module + "SymbolRow") }
 		textArgs = {"key": (module + "SymbolText"),
 				"parent": (module + "SymbolRow"),
 				"label" : moduleData}
 		#functArgs =  util.defaultArgs( defaultArgs, args)
 		
-		#Create start icon
+		#File blueprint icon
 		symbolFrame = self.layout(rowArgs)
 		symbolBut = self.symbolButton(buttonArgs)
 		symbolText = self.text(textArgs)		
 		return symbolBut
 	
-	def loadStartIcons(self):
+	def loadBlueprintIcons(self):
 		""" 
 			Load icon for each module available
 		"""
@@ -69,10 +70,10 @@ class NWWindowRigUI(NWWindow):
 		""" 
 			Load text in list for each module available
 		"""
-		defaultArgs = {"key": "buildList",
-						"parent": "buildScroll"}
+		defaultArgs = {"key": "rigList",
+						"parent": "rigScroll"}
 		functArgs =	 util.defaultArgs( defaultArgs, args)
-		selectCommand = ("NWRig" + ".UI.updateBuildAttributes({})")
+		selectCommand = ("NWRig" + ".UI.updateRigAttributes({})")
 		rootContainer = ""
 		iconTextScroll = ""
 		moduleList = []
@@ -86,8 +87,11 @@ class NWWindowRigUI(NWWindow):
 		else:
 			if self.elementExists(functArgs["key"]):
 				return self.windowElements[functArgs["key"].fullPath]
+			else:
+				cmds.warning("No modules found in scene")
+				return None
 
-		# Create list of modules in scene indent children
+		# File list of modules in scene indent children
 		moduleList = self.recursiveGetModules( (rootContainer + "_CNT") )
 		
 		# Add module list to funct args
@@ -124,92 +128,100 @@ class NWWindowRigUI(NWWindow):
 		
 		return moduleList
 		
-	def buildModules(self,args):
+	def rigModules(self,args):
 		"""
-			Get selected modules and build them recersively
+			Get selected modules and rig them recersively
 		"""
 		moduleList= []
 		
-		selectedModule = util.getFirst(self.queryInput("buildList"))
+		if self.elementExists("rigList") == False:
+			cmds.warning("No modules found in scene")
+			return None
+		
+		selectedModule = util.getFirst(self.queryInput("rigList"))
 		selectedModule = selectedModule.strip()
 		moduleList = self.recursiveGetModules(selectedModule)
 		
 		for module in moduleList:
 			moduleName = util.removeSuffix(module)
 			moduleName = moduleName.strip()
-			self.NWRigInstance.buildModule({"name": moduleName})
+			self.NWRigInstance.rigModule({"name": moduleName})
 	
-	def startModules(self):
+	def blueprintModules(self):
 		"""
-		Run start method for selected module
+		Run blueprint method for selected module
 		"""
-		startModule = self.queryElement("startModuleName")
-		self.NWRigInstance.startModule(startModule)
+		if self.elementExists("blueprintModuleName") == False:
+			cmds.warning("Blueprinter module not selected.")
+			return None
+		blueprintModule = self.queryElement("blueprintModuleName")
+		self.NWRigInstance.blueprintModule(blueprintModule)
 		
 			
-	def updateStartAttributes(self,args):
+	def updateBlueprintAttributes(self,args):
 		"""
 			Gets selected module and lists attributes
 		"""
 		functArgs = util.defaultArgs({}, args )
-		# Check startIconScroll element exists
-		if self.windowElements.has_key("startAttributeframe"):
+		# Check blueprintIconScroll element exists
+		if self.windowElements.has_key("blueprintAttributeframe"):
 			# Load selected objects attributes
-				self.loadStartAttributes(args["module"])
+				self.loadBlueprintAttributes(args["module"])
 		else:
 			pass
 		
-	def updateBuildAttributes(self,args):
+	def updateRigAttributes(self,args):
 		"""
 			Gets selected module and lists attributes
 		"""
 		functArgs = util.defaultArgs({}, args )
-		# Check buildIconScroll element exists
-		if self.inputs.has_key("buildList"):
-			selectedModule = self.queryInput("buildList")
+		# Check rigIconScroll element exists
+		if self.inputs.has_key("rigList"):
+			selectedModule = self.queryInput("rigList")
 			if selectedModule:
 				# Get selected element
 				selectedModule = util.getFirst(selectedModule)
 				# Load selected objects attributes
-				self.loadBuildAttributes(selectedModule.strip())
+				self.loadRigAttributes(selectedModule.strip())
 		else:
 			pass
 	 
-	def loadBuildAttributes(self, module):
+	def loadRigAttributes(self, module):
 		"""
 			Will load attributes of module in gui
 		"""
-		if self.windowElements.has_key("buildAttrTitle") == False:
-			self.text({"key":"buildAttrTitle",'label':'build module name','parent':"buildAttributeframe"})
-		if self.windowElements.has_key("buildAttrName") == False:
-			self.text({"key":"buildAttrName",'label':module,'parent':"buildAttributeframe"})
+		if self.windowElements.has_key("rigAttrTitle") == False:
+			self.text({"key":"rigAttrTitle",'label':'rig module name','parent':"rigAttributeframe"})
+		if self.windowElements.has_key("rigAttrName") == False:
+			self.text({"key":"rigAttrName",'label':module,'parent':"rigAttributeframe"})
 		else:
-			self.editElement("buildAttrName",label= module)
+			self.editElement("rigAttrName",label= module)
 			
-	def loadStartAttributes(self, module):
+	def loadBlueprintAttributes(self, module):
 		"""
 			Will load attributes of module in gui
 		"""
-		if self.windowElements.has_key("startModuleName") == False:
-			self.text({"key":"startModuleName",'label': module,'parent':"startAttributeframe"})
+		if self.windowElements.has_key("blueprintModuleName") == False:
+			self.text({"key":"blueprintModuleName",'label': module,'parent':"blueprintAttributeframe"})
 		else:
-			self.editElement("startModuleName",label= module)
+			self.editElement("blueprintModuleName",label= module)
 			
-		self.editElement("startTextField",tx= module)
+		self.editElement("blueprintTextField",tx= module)
 		
 	def getFilePath(self):
 		"""
 			will get file path from text field
 		"""
 		textFieldInput = ""
-		if self.windowElements.has_key("createFilePath"):
-			textFieldInput = self.queryInput("createFilePath")
+		if self.windowElements.has_key("fileFilePath"):
+			textFieldInput = self.queryInput("fileFilePath")
 			self.filePath = textFieldInput
 		else:
-			cmds.error("Create file path text field not found")
+			cmds.error("File file path text field not found")
+	
 	def connectPopupMenus(self, inputkey, outputkey):
 		"""
-			Builds connect popup menus
+			Rigs connect popup menus
 		"""
 		connectOutputPopup = self.popupMenu({'key':'connectOutputPopup','parent':outputkey} )
 		connectInputPopup = self.popupMenu({'key':'connectInputPopup','parent':inputkey} )
@@ -235,7 +247,7 @@ class NWWindowRigUI(NWWindow):
 	
 	def setConnectionModule(self, module, connectionType):
 		"""
-			Will create list of connections for selected module
+			Will file list of connections for selected module
 		"""
 		# Change name of button to module
 		if connectionType == "Input":
@@ -249,7 +261,7 @@ class NWWindowRigUI(NWWindow):
 		"""
 		# Input scroll list key 
 		connectionList = []
-		connectInputIconTextScroll = ("connect" + connectionType + "iconTextScroll")
+		connectInputIconTextScroll = ("connect" + connectionType + "IconTextScroll")
 		connectParent = ("connect" + connectionType + "Scroll")
 		key = ""
 		# Get module 
@@ -261,9 +273,6 @@ class NWWindowRigUI(NWWindow):
 		if connectionType == "Input":
 			module = self.queryElement("connectInputButton")
 			command = ("connectionList = self.NWRigInstance.Modules[\""+module+"\"].inputs.keys()")
-			print command
-			print self.NWRigInstance.Modules.keys()
-			print connectionList
 			exec command
 		elif connectionType == "Output":
 			module = self.queryElement("connectOutputButton")
@@ -274,7 +283,7 @@ class NWWindowRigUI(NWWindow):
 		
 		containerName = (module + "_CNT")
 		
-		# Add create functArgs
+		# Add file functArgs
 		functArgs = {"key": connectInputIconTextScroll, "append": connectionList,
 					 "parent": connectParent}
 		
@@ -289,14 +298,36 @@ class NWWindowRigUI(NWWindow):
 		self.inputs[key] = self.windowElements[key]
 		return iconTextScroll
 	
-	
-	#def buildModule(self,args):
-	#	 """
-	#		 Get selected module and build them
-	#	 """
-	#	 functArgs = {"name": "default"}
-	#	 functArgs =  dict(functArgs.items() + args.items())
-	#	 self.NWRigInstance.buildModule( functArgs )
+	def connectOutputToInput(self):
+		"""
+			Gets input and outputs from GUI and will connect them
+		"""
+		type = "trans"
+		connectInputIconTextScroll = "connectInputIconTextScroll"
+		connectOutputIconTextScroll = "connectOutputIconTextScroll"
+		connectionKey = ""
+		# get Input
+		inputKey = util.getFirst(self.queryInput(connectInputIconTextScroll))
+		# get Output
+		outputKey = util.getFirst(self.queryInput(connectOutputIconTextScroll))
+		
+		connectionKey = (outputKey + "_" + inputKey)
+		
+		# get Modules
+		inputModule = self.queryElement("connectInputButton")
+		outputModule = self.queryElement("connectOutputButton")
+		
+		# get input / output objects
+		inputObj = self.NWRigInstance.getInput(inputModule, inputKey)
+		outputObj = self.NWRigInstance.getOutput(outputModule, outputKey)
+		
+		inputPlug = (inputModule + "." + inputKey)
+		outputPlug = (outputModule + "." + outputKey)
+		
+		# perform connection based on type
+		self.NWRigInstance.Modules[inputModule].storeConnection(connectionKey, inputPlug, outputPlug , type)
+		self.NWRigInstance.createConnection( inputModule , connectionKey )
+		
 
 # just some testing
 if __name__ == "__main__":

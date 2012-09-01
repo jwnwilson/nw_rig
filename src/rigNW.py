@@ -3,9 +3,9 @@
 """
 To do:
 - Need to have multiple instances supported and namespaces for items in containers
-- Lock starter joints only allow manipulation through controls
-- Needs more sub controls for starters
-- Starter direction needs to be influenced by other starter controls
+- Lock blueprinter joints only allow manipulation through controls
+- Needs more sub controls for blueprinters
+- Blueprinter direction needs to be influenced by other blueprinter controls
 """
 
 import maya.standalone
@@ -48,21 +48,21 @@ class Command:
         def __init__(self,name): 
                 self.name = name
                 
-def startPrePost(start):
-        @wraps(start)
+def blueprintPrePost(blueprint):
+        @wraps(blueprint)
         def wrapper(*args, **kwds):
-            print ("calling :" + start.__name__)
-            ret = start(*args, **kwds)
-            args[0].startComplete()
+            print ("calling :" + blueprint.__name__)
+            ret = blueprint(*args, **kwds)
+            args[0].blueprintComplete()
             return ret
         return wrapper
         
-def buildPrePost(build):
-        @wraps(build)
+def rigPrePost(rig):
+        @wraps(rig)
         def wrapper(*args, **kwds):
-            print ("calling :" + build.__name__)
-            ret = build(*args, **kwds)
-            args[0].buildComplete()
+            print ("calling :" + rig.__name__)
+            ret = rig(*args, **kwds)
+            args[0].rigComplete()
             return ret
         return wrapper 
 
@@ -79,4 +79,4 @@ class RigNW:
 if __name__ == "__main__":
     print "test"
     test = HingeJoints("test")
-    test.start()
+    test.blueprint()

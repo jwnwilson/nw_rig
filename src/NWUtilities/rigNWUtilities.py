@@ -73,10 +73,10 @@ def getArgs(node, attr):
 def getKwargs(node, attr):
     pass
     
-#starter functions
-def createStarterChain( name, args ):
-        'Creates a default starters'
-        rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
+#blueprinter functions
+def createBlueprinterChain( name, args ):
+        'Creates a default blueprinters'
+        rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )
         J = []
         SCtls =[]
         functArgs = {"shape":"sphere", "size":0.5, "chainNo": 4}
@@ -84,9 +84,9 @@ def createStarterChain( name, args ):
         
         #create control
         for x in range(functArgs["chainNo"]):
-                starter = createStarter( (name + str(x)), functArgs )
-                cmds.move(0,0,(x*1),starter[1])
-                SCtls.append(starter)
+                blueprinter = createBlueprinter( (name + str(x)), functArgs )
+                cmds.move(0,0,(x*1),blueprinter[1])
+                SCtls.append(blueprinter)
                 
         # manage joints
         cmds.parent(SCtls[0][2],rootGrp)
@@ -102,10 +102,10 @@ def createStarterChain( name, args ):
                 
         return J
 
-def createStarter( name, args ):
-        'Creates a default starters'
+def createBlueprinter( name, args ):
+        'Creates a default blueprinters'
         
-        #rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
+        #rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )
         J = []
         functArgs = {"shape":"cube", "size":1, "t":0, "r":0, "s":0}
         functArgs =  dict(functArgs.items() + args.items())
@@ -131,7 +131,7 @@ def createStarter( name, args ):
         if functArgs["s"] == 1:
             lockHide(J[0], {"s":1, "h":1, "l":1})
             
-        #add starter joint
+        #add blueprinter joint
         jnt = cmds.joint( n = ( name + "_SJNT" ), p= (0, 0, 0 ) )
         matrixConstraint(J[0] , jnt, 0, {})
         J.append(jnt)
@@ -145,9 +145,9 @@ def createStarter( name, args ):
         cmds.rename(J[0],newName)
         J[0] = newName
         
-        #create starter variable
-        for starter in J:
-            storeString(starter, "starter", "")
+        #create blueprinter variable
+        for blueprinter in J:
+            storeString(blueprinter, "blueprinter", "")
         return J
 
 #control functiols

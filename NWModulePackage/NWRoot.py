@@ -16,8 +16,8 @@ class NWRoot(NWModule.NWModule):
         def initialize(self):
             # store variables in container
             util.storeString(self.container, "type", "NWRoot")
-        @NWModule.startPrePost
-        def start(self,**kwargs):
+        @NWModule.blueprintPrePost
+        def blueprint(self,**kwargs):
              modulesGrp = cmds.group( n = ("modules_GRP"), em = True , p=  self.rootGrp)
              geometryGrp = cmds.group( n = ("geometry_GRP"), em = True , p=  self.rootGrp)
              globalGrp = cmds.group( n = ("global_GRP"), em = True , p=  self.rootGrp)
@@ -27,8 +27,8 @@ class NWRoot(NWModule.NWModule):
              self.groups["geometry"] = geometryGrp
              self.groups["global"] = globalGrp
              
-        @NWModule.buildPrePost
-        def build(self,**kwargs):
+        @NWModule.rigPrePost
+        def rig(self,**kwargs):
             # check for module container
             pass
         def connect(self,**kwargs):
@@ -44,5 +44,5 @@ Test Code
 """
 if __name__ == "__main__":
         test = NWRoot("test")
-        test.start()
-        test.build()
+        test.blueprint()
+        test.rig()

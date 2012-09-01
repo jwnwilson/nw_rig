@@ -93,10 +93,12 @@ class NWSpineJoints(NWModule.NWModule):
                     clusterCtls.append(clusterCtl)
                     
                 # parent controls
-                print clusterCtls
                 for x in range(1,  len(clusterCtls) ):
                     cmds.parent( clusterCtls[x][1], clusterCtls[x-1][0] )
                 cmds.parent(rootGrp, self.rootGrp)
+                
+                # store outputs
+                self.storeOutput(clusterCtls[4][0],"endControl")
                 
                 # register Builds
                 #self.registerObjects((baseCtl + ikCtl + poleCtl), "regBuildTransform")

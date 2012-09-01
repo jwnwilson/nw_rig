@@ -153,12 +153,20 @@ def match(source, target , args):
 def addAttr(object, attrName, attrType, **kwargs):
     if cmds.objExists( (object + "." + attrName) ) == False:
         cmds.addAttr(object, ln= attrName, at= attrType, **kwargs)
+    else:
+        return False
 def addStringAttribute(node,attr,data):
-    cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
-    cmds.setAttr((node+"." + attr), data, type="string")
+    if cmds.objExists( (node + "." + attr) ) == False:
+        cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
+        cmds.setAttr((node+"." + attr), data, type="string")
+    else:
+        return False
 def addStringArrayAttribute(node,attr,data):
-    cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
-    cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
+    if cmds.objExists( (node + "." + attr) ) == False:
+        cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
+        cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
+    else:
+        return False
 def checkSetAttr( attr, value):
     """
         checks attribute is setable will set if so returns bool
@@ -174,6 +182,19 @@ def checkSetCompoundAttr(attr, compoundValue):
     checkSetAttr( (attr + "x"), compoundValue[0])
     checkSetAttr( (attr + "y"), compoundValue[1])
     checkSetAttr( (attr + "z"), compoundValue[2])
+    
+def getConnectedObjects( attr ):
+    """
+        gets objects connected to attribute
+    """
+    if cmds.objExists( attr ):
+        objects = cmds.listConnections( attr )
+        """for x in range( len(objects) ):
+            print objects[x]
+            objects[x] = cmds.plugNode(objects[x])"""
+        return objects
+    else:
+        return False
 # ------------------------
 # storage functions
 # ------------------------

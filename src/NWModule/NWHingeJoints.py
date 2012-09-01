@@ -2,20 +2,20 @@
 
 class NWHingeJoints(Module):
         'Creates a hinge joints for arms and leg type joints' 
-        @startPrePost
-        def start(self,**kwargs):
+        @blueprintPrePost
+        def blueprint(self,**kwargs):
                 'Creates a hinge joint can be used for arms or legs'
                 #create container to store all module variables
                 
-                rootGrp = cmds.group( n = (self.name + "Start_GRP"), em = True )
+                rootGrp = cmds.group( n = (self.name + "Blueprint_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True )
                 
-                # create starters
-                base = util.createStarter((self.name + "base"), {"shape":"sphere", "size": 0.5})
-                middle = util.createStarter((self.name + "middle"), {})
-                end  = util.createStarter((self.name + "end"), {"shape":"sphere", "size": 0.5})
+                # create blueprinters
+                base = util.createBlueprinter((self.name + "base"), {"shape":"sphere", "size": 0.5})
+                middle = util.createBlueprinter((self.name + "middle"), {})
+                end  = util.createBlueprinter((self.name + "end"), {"shape":"sphere", "size": 0.5})
                 
-                # manage starter joints
+                # manage blueprinter joints
                 joints = []
                 joints.append(base[2])
                 joints.append(middle[2])
@@ -26,8 +26,8 @@ class NWHingeJoints(Module):
                 
                 # create arrow ctls
                 args = {"shape":"arrow", "size":0.5}
-                starterArrow = util.createControl( (self.name + "Direction"), args )
-                cmds.rotate( 0, 90, 0 , starterArrow[1])
+                blueprinterArrow = util.createControl( (self.name + "Direction"), args )
+                cmds.rotate( 0, 90, 0 , blueprinterArrow[1])
                 args = {"all" : 1, "mo" : 0}
                 cmds.cycleCheck( e= 0)
                 util.match(joints[0], base[0], args)
@@ -43,8 +43,8 @@ class NWHingeJoints(Module):
                 middleConst =cmds.pointConstraint(middle[0], joints[1], n = (self.name + "MiddleConst" + "_PNT") )
                 baseEndConst = cmds.pointConstraint(end[0], base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_PNT") )
                 baseEndAimConst = cmds.aimConstraint(base[0], axisCtl[0], n = (self.name + "BaseEndConst" + "_AIM") )
-                arrowAimConst = cmds.aimConstraint(end[0], starterArrow[1], n = (self.name + "ArrowConst" + "_AIM") )
-                arrowEndConst = cmds.pointConstraint(base[0], starterArrow[1], n = (self.name + "ArrowConst" + "_PNT") )
+                arrowAimConst = cmds.aimConstraint(end[0], blueprinterArrow[1], n = (self.name + "ArrowConst" + "_AIM") )
+                arrowEndConst = cmds.pointConstraint(base[0], blueprinterArrow[1], n = (self.name + "ArrowConst" + "_PNT") )
                 
                 util.lockHide(base[0], {"s":1,"v":1, "l":1, "h":1})
                 util.lockHide(middle[0], {"r":1,"s":1,"v":1, "l":1, "h":1})
@@ -54,40 +54,40 @@ class NWHingeJoints(Module):
                 cmds.parent(middle[1], axisCtl[1] )
                 cmds.parent(axisCtl[0],base[0] )
                 cmds.parent(base[1], rootGrp,)
-                cmds.parent(starterArrow[1], rootGrp)
+                cmds.parent(blueprinterArrow[1], rootGrp)
                 cmds.parent(jointGrp, rootGrp)
                 
                 cmds.move(0, 0, 0, base[1])
                 cmds.move(0, 0, 2, end[1])
                 
                 #store joints and controls
-                self.storeStarterJoints( joints )
-                self.storeStarterControls( [base[0],middle[0],end[0]] )
+                self.storeBlueprinterJoints( joints )
+                self.storeBlueprinterControls( [base[0],middle[0],end[0]] )
                 
-        @buildPrePost
-        def build(self,**kwargs):
+        @rigPrePost
+        def rig(self,**kwargs):
                 # check for module container
-                rootGrp = cmds.group( n = (self.name + "Build_GRP"), em = True )
+                rootGrp = cmds.group( n = (self.name + "Rig_GRP"), em = True )
                 jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
                 setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
                 
                 if cmds.objExists(self.container) == False :
                     cmds.error("Container: " + self.name + " does not exist!")
-                #get starter joints
-                starters  = self.getStarterJoints()
+                #get blueprinter joints
+                blueprinters  = self.getBlueprinterJoints()
                 
-                for joint in starters:
+                for joint in blueprinters:
                     if cmds.objExists(joint) == False:
                         cmds.error(joint + " not found!")
 
                 # Duplicate joints
-                joints = util.duplicateChain( self.name , starters)
+                joints = util.duplicateChain( self.name , blueprinters)
                 cmds.parent(joints,jointGrp)
                 
                 if len(joints) > 3:
                     cmds.error("Too many joints in: " + self.name + "!")
-                # Hide starters joints
-                cmds.setAttr((self.name + "Start_GRP" + ".v"), 0)
+                # Hide blueprinters joints
+                cmds.setAttr((self.name + "Blueprint_GRP" + ".v"), 0)
                 
                 # Create ikHandle
                 handleData = util.createIkHandle(joints)
@@ -95,7 +95,7 @@ class NWHingeJoints(Module):
                 
                 # Create controls for handle
                 
-                #self.buildComplete()
+                #self.rigComplete()
         def connect(self,**kwargs):
             # Get Connection data
             

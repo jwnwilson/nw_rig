@@ -153,12 +153,25 @@ def match(source, target , args):
 def addAttr(object, attrName, attrType, **kwargs):
     if cmds.objExists( (object + "." + attrName) ) == False:
         cmds.addAttr(object, ln= attrName, at= attrType, **kwargs)
+    else:
+        return False
 def addStringAttribute(node,attr,data):
-    cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
-    cmds.setAttr((node+"." + attr), data, type="string")
+    if cmds.objExists( (node + "." + attr) ) == False:
+        cmds.addAttr(node, longName= attr,shortName= (attr[0]+ attr[len(attr)-1]), dataType="string")
+        cmds.setAttr((node+"." + attr), data, type="string")
+    else:
+        return False
 def addStringArrayAttribute(node,attr,data):
-    cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
-    cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
+    if cmds.objExists( (node + "." + attr) ) == False:
+        cmds.addAttr( node, dt = "stringArray", ln = attr, sn = (attr[0]+ attr[len(attr)-1]))
+        cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
+    else:
+        return False
+def setStringArrayData(node,attr,data):
+    if cmds.objExists( (node + "." + attr) ) == True:
+        cmds.setAttr( (node+"." + attr), type = 'stringArray', *([len(data)] + data) )
+    else:
+        return False
 def checkSetAttr( attr, value):
     """
         checks attribute is setable will set if so returns bool
@@ -181,8 +194,9 @@ def getConnectedObjects( attr ):
     """
     if cmds.objExists( attr ):
         objects = cmds.listConnections( attr )
-        for x in range( len(objects) ):
-            objects[x] = cmds.plugNode(objects[x])
+        """for x in range( len(objects) ):
+            print objects[x]
+            objects[x] = cmds.plugNode(objects[x])"""
         return objects
     else:
         return False
@@ -251,11 +265,11 @@ def getArgs(node, attr):
 def getKwargs(node, attr):
     pass
 # ------------------------
-#starter functions
+#blueprinter functions
 # ------------------------
-def createStarterChain( name, args ):
-        'Creates a default starters'
-        rootGrp = cmds.group( n = (name + "Starter_GRP"), em = True )
+def createBlueprinterChain( name, args ):
+        'Creates a default blueprinters'
+        rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )
         ret = {}
         sctls = []
         joints = []
@@ -264,10 +278,10 @@ def createStarterChain( name, args ):
         
         #create control
         for x in range(functArgs["chainNo"]):
-                starter = createStarter( (name + str(x)), functArgs )
-                sctls.append(starter["sctl"])
-                joints.append(starter["jnt"])
-                cmds.move(0,0,(x*1),starter["sctl"][1])
+                blueprinter = createBlueprinter( (name + str(x)), functArgs )
+                sctls.append(blueprinter["sctl"])
+                joints.append(blueprinter["jnt"])
+                cmds.move(0,0,(x*1),blueprinter["sctl"][1])
                 
         # manage joints
         cmds.parent(joints[0],rootGrp)
@@ -281,8 +295,8 @@ def createStarterChain( name, args ):
         ret["jnt"] = joints     
         return ret
 
-def createStarter( name, args ):
-        'Creates a default starters'
+def createBlueprinter( name, args ):
+        'Creates a default blueprinters'
         ret = {}
         sctl = []
         jnt = ""
@@ -310,7 +324,7 @@ def createStarter( name, args ):
         if functArgs["s"] == 1:
             lockHide(sctl[0], {"s":1, "h":1, "l":1})
             
-        #add starter joint
+        #add blueprinter joint
         jnt = cmds.joint( n = ( name + "_SJNT" ), p= (0, 0, 0 ) )
         constrain(sctl[0], jnt, args={ "t":1, "mo":0, "name":(name)} )
         #matrixConstraint(sctl[0] , jnt, 0, {})
@@ -328,9 +342,9 @@ def createStarter( name, args ):
         cmds.rename(sctl[1],newName)
         sctl[1] = newName
         
-        #create starter variable
-        """for starter in sctl:
-            storeString(starter, "starter", "")
+        #create blueprinter variable
+        """for blueprinter in sctl:
+            storeString(blueprinter, "blueprinter", "")
         storeString(jnt, "sjoint", "")"""
             
 	ret["sctl"] = sctl
