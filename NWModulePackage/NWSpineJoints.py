@@ -35,7 +35,7 @@ class NWSpineJoints(NWModule.NWModule):
                 spineChainData = util.createBlueprinterChain( (self.name + "SpineChainBlueprinter"), {"chainNo": 5})
                 spineChainJoints = spineChainData["jnt"]
                 spineChainSctls = spineChainData["sctl"]
-                print spineChainSctls
+                
                 cmds.parent(spineChainJoints[0], jointGrp)
                 cmds.parent(spineChainSctls[0][1], rootGrp)
                 
