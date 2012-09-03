@@ -71,7 +71,9 @@ class NWModule:
             pass
                     
         def rigPre(self):
-            pass
+            # Hide blueprint
+            if cmds.objExists( (self.name + "Blueprint_GRP") ):
+                cmds.setAttr( (self.name + "Blueprint_GRP" + ".v"), 0)
         def blueprintPost(self):
             #set blueprint to 1 in container and class
             self.storeVariable("blueprint", "st", "short", 1)
@@ -81,6 +83,9 @@ class NWModule:
             self.storeVariable("rig", "bu", "short", 1)
             # load connections data and connect stuff up!
             self.rigVar = 1
+            
+        def isRoot(self):
+            return False
                 
         @blueprintPrePost        
         def blueprint(self):
@@ -138,17 +143,17 @@ class NWModule:
             
             if inputsAttrs:
                 for attr in inputsAttrs:
-					# get attr key
-					key = util.getSuffix(attr)
-					if key != "data":
-						# get connected obj
-						objs = util.getConnectedObjects( (self.container + "." + attr) )
-						# store obj
-						self.inputs[key] = util.getFirst(objs)
-							
+                    # get attr key
+                    key = util.getSuffix(attr)
+                    if key != "data":
+                        # get connected obj
+                        objs = util.getConnectedObjects( (self.container + "." + attr) )
+                        # store obj
+                        self.inputs[key] = util.getFirst(objs)
+                            
             if outputsAttrs:
                 for attr in outputsAttrs:
-					# get attr key
+                    # get attr key
                     key = util.getSuffix(attr)
                     if key != "data":
                         # get connected obj
@@ -254,7 +259,7 @@ class NWModule:
                 self.connections[connectionKey] = {"input":inputPlug,"output":outputPlug, "connectAttr":connectAttr}
                 self.registerAttribute( connectDataAttr )
             else:
-                cmds.error( "Connection value :" + (self.container + "." + connectAttr) + " already exists" )
+                cmds.warning( "Connection value :" + (self.container + "." + connectAttr) + " already exists" )
                 
         def updateConnectionData():
             """

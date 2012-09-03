@@ -38,6 +38,8 @@ class NWRoot(NWModule.NWModule):
             
             # connect objects
             pass
+        def isRoot(self):
+			return True
 
 """
 Test Code

@@ -111,8 +111,6 @@ class NWHingeJoints(NWModule.NWModule):
                 
                 if len(joints) > 3:
                     cmds.error("Too many joints in: " + self.name + "!")
-                # Hide blueprinters joints
-                cmds.setAttr((self.name + "Blueprint_GRP" + ".v"), 0)
                 
                 # Create ikHandle
                 polePosition = util.getPolePosition(joints, 3)

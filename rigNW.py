@@ -111,27 +111,54 @@ class RigNW:
             
         # ------------------------      
         # Load save data
-        # ------------------------
+        # ------------------------    
+        """def loadBluePrints(self):
+            ""
+                Loads blueprints for current rig
+            ""
+            # refresh UI path
+            self.UI.getFilePath()
+            blueprintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
+            FILE = open(blueprintFilePath,"rU")
+            lineArray = FILE.readlines()
+            FILE.close()
+            
+            # Build blueprints
+            for line in lineArray:
+                moduleName = line.split()[0]
+                module = line.split()[1]
+                self.blueprintModule(moduleName,module )
+            # Load data
+            self.loadBlueprintData()"""
+        
         def loadBlueprintData(self):
             """
-                Loads blueprint data onto blueprinters
+                Loads blueprint data onto blueprinter
             """
             # open file from path in UI
             self.UI.getFilePath()
             for module in self.getModules():
+                # Load transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
                 self.loadTransforms(filePath)
+                # Load attributes
             print ("Blueprint data loaded")
         
         def saveBlueprintData(self):
             """
-                Saves blueprint data onto blueprinters
+                Saves blueprint data into file
             """
             # refresh UI path
             self.UI.getFilePath()  
+            bluePrintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
+            # Save module data
+            self.saveBlueprintModuleData( bluePrintFilePath, self.getModules() )
+            # Save detailed info in seperate files
             for module in self.getModules():
+                # Save blueprint transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
                 self.saveTransforms(filePath, module, "regBlueprintTransform" )
+                # Save attribute data
             print ("Blueprint data saved")
             
         def saveRigData(self):
@@ -239,7 +266,6 @@ class RigNW:
                 registeredAttr = self.readRigRegisteredAttr(startModuleIndice, endModuleIndice , lineArray)
                 fileIndice = endModuleIndice
                 
-                print module
                 # Load registered Attr data
                 for regAttr in registeredAttr:
                     if regAttr.split(".")[1] == "regRigShape":
@@ -340,6 +366,19 @@ class RigNW:
             blueprintData = FILE.write(writeData)
             FILE.close()
             print ("Saved transform data to : " + filePath)
+            
+        def saveBlueprintModuleData(self, bluePrintFilePath,  modules):
+            """
+                Saves blueprint module names type and parents
+            """
+            writeData = ""
+            for module in modules:
+                writeData += ( module + " " + util.getString(self.Modules[module].container, "type") + "\n" )
+                
+            FILE = open(bluePrintFilePath,"wb")
+            blueprintData = FILE.write(writeData)
+            FILE.close()
+        
         def readRigConnectionData(self,  startModuleIndice, endModuleIndice, lineArray ):
             """
                 Will read array and retrieve connection data
@@ -459,13 +498,87 @@ class RigNW:
             if method == "rig" and self.Modules[name].rigVar == 0:
                     return True
             return False
-        def blueprintModule(self,module):
+            
+        def setBlueprintMode(self, moduleName):
+            """
+                Hides rig and unhides blueprint
+            """
+            if cmds.objExists( (moduleName + "Blueprint_GRP") ):
+                cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 1)#
+                print ( moduleName + "Rig_GRP" )
+                if cmds.objExists( ( moduleName + "Rig_GRP" ) ):
+                	cmds.delete( (moduleName + "Rig_GRP") )
+                self.Modules[moduleName].storeVariable("blueprint", "st", "short", 1)
+                self.Modules[moduleName].blueprintVar = 1
+                self.Modules[moduleName].storeVariable("rig", "st", "short", 0)
+                self.Modules[moduleName].rigVar = 0
+                
+            #else:
+            #    cmds.error("Blueprint group not found for : " + moduleName)
+            
+        def setRigMode(self, moduleName):
+            """
+                Hides rig and unhides blueprint
+            """
+            if cmds.objExists( (moduleName + "Rig_GRP") ):
+                cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 0)
+                cmds.setAttr((moduleName + "Rig_GRP" + ".v"), 1)
+                self.Modules[moduleName].storeVariable("blueprint", "st", "short", 0)
+                self.Modules[moduleName].blueprintVar = 0
+                self.Modules[moduleName].storeVariable("rig", "st", "short", 1)
+                self.Modules[moduleName].rigVar = 1
+            #else:
+            #    cmds.error("Rig group not found for : " + moduleName)
+            
+        def blueprintMode(self):
+            """
+                Builds rig blueprints or sets modules back to blueprint mode
+            """
+            # refresh UI path
+            self.UI.getFilePath()
+            blueprintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
+            FILE = open(blueprintFilePath,"rU")
+            lineArray = FILE.readlines()
+            FILE.close()
+            
+            # Build blueprints
+            for line in lineArray:
+                moduleName = line.split()[0]
+                module = line.split()[1]
+                # check modules exist
+                if self.moduleExists(moduleName) == False:
+                    self.blueprintModule(moduleName,module )
+                else:
+                    self.setBlueprintMode(moduleName)
+            # Load data
+            self.loadBlueprintData()
+                
+        def rigMode(self):
+            """
+                Builds rig from blueprints if already built will delete and rebuild
+            """
+            modules = self.getModules()
+            
+            for module in modules:
+                # Check modules are built
+                moduleInstance = self.Modules[module]
+                
+                if moduleInstance.rigVar == 1 and moduleInstance.isRoot() == False:
+                    # if so rebuild but don't reload data
+                    self.setBlueprintMode(module)
+                    self.rigModule({"name":module})
+                # if not build and load data
+                else:
+                    self.rigModule({"name":module})
+            self.loadRigData()
+            
+        def blueprintModule(self, name ,module):
             """
                 Run blueprint method for module
             """
             # get module name
-            windowElement = self.UI.inputs["blueprintTextField"]
-            name = cmds.textField(windowElement.fullPath, q=True,tx=True)
+            #windowElement = self.UI.inputs["blueprintTextField"]
+            #name = cmds.textField(windowElement.fullPath, q=True,tx=True)
             
             # Check that root is built
             if self.rootExists() == False:
@@ -480,10 +593,12 @@ class RigNW:
                 except:
                     print "Unexpected error:", sys.exc_info()[0]
                 self.Modules[mod.name] = mod
-                cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
-                cmds.container( self.Modules["root"].container, edit=True, an= mod.container)
+                if module != "NWRoot":
+                    cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
+                    cmds.container( self.Modules["root"].container, edit=True, an= mod.container)
             else:
-                print ("Module \"" + name + "\" already exists!")
+                if module != "NWRoot":
+                    print ("Module \"" + name + "\" already exists!")
                 
         def rigModule(self,args):
             """
@@ -496,7 +611,7 @@ class RigNW:
             
             # Check that root is built
             if self.rootExists() == False:
-                    cmds.error("Root container not found during rig")
+                cmds.error("Root container not found during rig")
             self.refreshModuleList()
             
             # check module exists and rig has not been run
