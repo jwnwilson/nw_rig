@@ -499,27 +499,27 @@ class RigNW:
                     return True
             return False
             
-        def setBlueprintMode(self, moduleName):
+        def undoRigMode(self, moduleName):
             """
-                Hides rig and unhides blueprint
+               	Deletes rig and unhides blueprint
             """
             if cmds.objExists( (moduleName + "Blueprint_GRP") ):
-                cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 1)#
-                print ( moduleName + "Rig_GRP" )
+                cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 1)
                 if cmds.objExists( ( moduleName + "Rig_GRP" ) ):
                 	cmds.delete( (moduleName + "Rig_GRP") )
                 self.Modules[moduleName].storeVariable("blueprint", "st", "short", 1)
                 self.Modules[moduleName].blueprintVar = 1
                 self.Modules[moduleName].storeVariable("rig", "st", "short", 0)
                 self.Modules[moduleName].rigVar = 0
+                self.Modules[moduleName].clearModuleRigData()
                 
             #else:
             #    cmds.error("Blueprint group not found for : " + moduleName)
             
-        def setRigMode(self, moduleName):
-            """
+        """def setRigMode(self, moduleName):
+            ""
                 Hides rig and unhides blueprint
-            """
+            ""
             if cmds.objExists( (moduleName + "Rig_GRP") ):
                 cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 0)
                 cmds.setAttr((moduleName + "Rig_GRP" + ".v"), 1)
@@ -529,7 +529,7 @@ class RigNW:
                 self.Modules[moduleName].rigVar = 1
             #else:
             #    cmds.error("Rig group not found for : " + moduleName)
-            
+		"""
         def blueprintMode(self):
             """
                 Builds rig blueprints or sets modules back to blueprint mode
@@ -549,7 +549,7 @@ class RigNW:
                 if self.moduleExists(moduleName) == False:
                     self.blueprintModule(moduleName,module )
                 else:
-                    self.setBlueprintMode(moduleName)
+                    self.undoRigMode(moduleName)
             # Load data
             self.loadBlueprintData()
                 
@@ -565,7 +565,7 @@ class RigNW:
                 
                 if moduleInstance.rigVar == 1 and moduleInstance.isRoot() == False:
                     # if so rebuild but don't reload data
-                    self.setBlueprintMode(module)
+                    self.undoRigMode(module)
                     self.rigModule({"name":module})
                 # if not build and load data
                 else:

@@ -260,8 +260,31 @@ class NWModule:
                 self.registerAttribute( connectDataAttr )
             else:
                 cmds.warning( "Connection value :" + (self.container + "." + connectAttr) + " already exists" )
-                
-        def updateConnectionData():
+        
+        def clearModuleRigData(self):
+            """
+                Will delete input , output adn connection data
+            """
+            # Get input attrs
+            inputAttrs = cmds.listAttr( self.container, st='input_*')
+            # Get output attrs
+            outputAttrs = cmds.listAttr( self.container, st='output_*')
+            # Get connections attrs
+            connectAttrs = cmds.listAttr( self.container, st='connection_*')
+            
+            if inputAttrs == None:
+                inputAttrs = []
+            if outputAttrs == None:
+                outputAttrs = []
+            if connectAttrs == None:
+                connectAttrs = []
+            
+            attrs = (inputAttrs + outputAttrs + connectAttrs)
+            # Delete attrs
+            for attr in attrs:
+                cmds.deleteAttr( self.container, at= attr)
+            
+        def updateConnectionData(self):
             """
                 Go through module finding connections and updating connections dict
             """
