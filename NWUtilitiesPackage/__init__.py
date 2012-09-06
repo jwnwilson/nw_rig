@@ -1,6 +1,14 @@
-import NWUtilitiesPackage.NWFileUtilities as fileUtil
-
-__all__ = ["NWUtilities","NWFileUtilities"]
-
-#for module in __all__:
-#	fileUtil.loadModule( module)
+__all__ = [
+			"NWUtilitiesFile",
+			"NWUtilitiesAttribute",
+			"NWUtilitiesBlueprint",
+			"NWUtilitiesConstraint",
+			"NWUtilitiesControl",
+			"NWUtilitiesCurve",
+			"NWUtilitiesFile",
+			"NWUtilitiesJoint",
+			"NWUtilitiesLib",
+			"NWUtilitiesString",
+			"NWUtilitiesTransform",
+			"NWUtilities"
+]

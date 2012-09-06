@@ -501,12 +501,12 @@ class RigNW:
             
         def undoRigMode(self, moduleName):
             """
-               	Deletes rig and unhides blueprint
+                Deletes rig and unhides blueprint
             """
             if cmds.objExists( (moduleName + "Blueprint_GRP") ):
                 cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 1)
                 if cmds.objExists( ( moduleName + "Rig_GRP" ) ):
-                	cmds.delete( (moduleName + "Rig_GRP") )
+                    cmds.delete( (moduleName + "Rig_GRP") )
                 self.Modules[moduleName].storeVariable("blueprint", "st", "short", 1)
                 self.Modules[moduleName].blueprintVar = 1
                 self.Modules[moduleName].storeVariable("rig", "st", "short", 0)
@@ -529,7 +529,7 @@ class RigNW:
                 self.Modules[moduleName].rigVar = 1
             #else:
             #    cmds.error("Rig group not found for : " + moduleName)
-		"""
+        """
         def blueprintMode(self):
             """
                 Builds rig blueprints or sets modules back to blueprint mode
@@ -588,10 +588,8 @@ class RigNW:
             if self.moduleExists(name) == False:
                 command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
                 exec command
-                try:
-                    mod.blueprint()
-                except:
-                    print "Unexpected error:", sys.exc_info()[0]
+                
+                mod.blueprint()
                 self.Modules[mod.name] = mod
                 if module != "NWRoot":
                     cmds.parent(mod.rootGrp, self.Modules["root"].groups["modules"])
@@ -616,11 +614,8 @@ class RigNW:
             
             # check module exists and rig has not been run
             if self.moduleExists(name) and self.checkMethod(name, "rig"):
-                try:
-                    mod = self.Modules[name]
-                    mod.rig()
-                except:
-                    print "Unexpected error:", sys.exc_info()
+                mod = self.Modules[name]
+                mod.rig()
             else:
                 print ("Module \"" + name + "\" already built!")
                 

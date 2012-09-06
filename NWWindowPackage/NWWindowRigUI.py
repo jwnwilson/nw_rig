@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import maya.cmds as cmds
-from NWWindow import *
+import NWUtilitiesPackage.NWUtilities as util
+import NWWindow
 import sys
 import os
 
@@ -16,7 +17,7 @@ To do:
 # temp addition to python path variable
 ICON_PATH = "/icons"
 
-class NWWindowRigUI(NWWindow):
+class NWWindowRigUI(NWWindow.NWWindow):
     """ 
     Files a class which will file and manage a UI wrapping around maya's
     functionallity
