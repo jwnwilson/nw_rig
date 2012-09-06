@@ -3,8 +3,12 @@
     
 """
 from functools import wraps
-import NWUtilitiesPackage.NWUtilities as util
 import maya.cmds as cmds
+# old utility functions
+import NWUtilitiesPackage.NWUtilities as util
+# new utility functions
+exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
+
 
 
 def blueprintPrePost(blueprint):

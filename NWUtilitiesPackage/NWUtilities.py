@@ -42,4 +42,20 @@ from NWUtilitiesLib import *
 from NWUtilitiesString import *
 from NWUtilitiesTransform import *
 
+def importUtilitiesShortNames():
+	"""
+		Will import all utilities into module with short names
+	"""
+	execString =   ("import NWUtilitiesFile as fileUtil\n"+
+					"import NWUtilitiesAttribute as attr\n"+
+					"import NWUtilitiesBlueprint as blueprint\n"+
+					"import NWUtilitiesConstraint as constraint\n"+
+					"import NWUtilitiesControl as control\n"+
+					"import NWUtilitiesCurve as curve\n"+
+					"import NWUtilitiesJoint as joint\n"+
+					"import NWUtilitiesLib as lib\n"+
+					"import NWUtilitiesString as string\n"+
+					"import NWUtilitiesTransform as transform")
+	
+	return execString
 
