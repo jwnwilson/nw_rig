@@ -8,7 +8,11 @@ except ImportError:
         print "Error"
 
 import maya.cmds as cmds
+# old utility functions
+import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
+# new utility functions
+exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
         
 
 class NWHingeJoints(NWModule.NWModule):

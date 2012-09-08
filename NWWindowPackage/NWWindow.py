@@ -64,6 +64,8 @@ class NWWindow:
         self.images= {}
         # additional list for queryable inputs
         self.inputs= {}
+        # value window
+        self.valueWindow = None
         
         #args= {"h":self.windowParamters["windowWidth"], "w":self.windowParamters["windowHeight"], "title":self.windowParamters["title"]}
         self.initialiseWindow(**kwds)
@@ -304,13 +306,13 @@ class NWWindow:
         return menuFullPath
         
     def popupMenu(self, args, **kwargs):
-    	"""
-    	Creates pop up menu
-    	"""
-    	defaultArgs = {"key": "key",
+        """
+        Creates pop up menu
+        """
+        defaultArgs = {"key": "key",
                         "type":"menuItem",
                         "parent":self.currentParent}
-    	functArgs =  util.defaultArgs( defaultArgs, args)
+        functArgs =  util.defaultArgs( defaultArgs, args)
         
         # element initialization checks
         self.elementInitializeCheck(functArgs)
@@ -321,10 +323,10 @@ class NWWindow:
         return fullPath
         
     def menuItem(self, args, **kwargs):
-    	"""
-    	   Creates menu item for menu
-    	"""
-    	defaultArgs = {"key": "key",
+        """
+           Creates menu item for menu
+        """
+        defaultArgs = {"key": "key",
                         "label":"MenuItem",
                         "type":"menuItem",
                         "parent":self.currentParent}
@@ -339,11 +341,11 @@ class NWWindow:
         return menuFullPath
         
     def guiCommandWrapper(self,command, args, **kwards):
-    	"""
-    	   experimental function to wrap any maya command with default arguments
-    	"""
-    	
-    	defaultArgs = {"key": "key",
+        """
+           experimental function to wrap any maya command with default arguments
+        """
+        
+        defaultArgs = {"key": "key",
                         "label":"default",
                         "type":"custom",
                         "parent":self.currentParent}
@@ -416,7 +418,7 @@ class NWWindow:
         returnVal = ""
         # Check input exists
         if self.elementExists(elementKey) == False:
-        	cmds.error("Query element has not found windows element")
+            cmds.error("Query element has not found windows element")
         
         element = self.windowElements[elementKey]
         
@@ -444,17 +446,39 @@ class NWWindow:
         exec command
         
     def elementInitializeCheck(self, functArgs ):
-   	"""
-   	   Checks that element does not already exist and has parent to connect to
-   	"""
-   	# check if element already exists
+        """
+           Checks that element does not already exist and has parent to connect to
+        """
+        # check if element already exists
         if self.elementExists(functArgs["key"]):
             cmds.error( "Element :" + functArgs["key"] + " already exists")
         # Check parent exists for button
         if(functArgs["parent"] == None):
             cmds.error( ("No parent found for " + functArgs["type"]) )
-   	   
+        
+    def createValueWindow(self, message, defaultValue, command ):
+        """
+            Will show message and prompt user for a value
+        """
+        # Create window
+        self.valueWindow = NWWindow({"name":"valueWindow", "windowWidth":500, "windowHeight":100, "title":"NWWindowValue", "NWRig":self})
+        # Root layout
+        layout = self.valueWindow.layout({'key':'rootLayout','label':'root'})
+        self.valueWindow.text({'key':'text','label':message,'parent':layout})
+        self.valueWindow.textField({'key':'textField','label':defaultValue,'parent':layout})
+        print command.replace("%","NWRig.UI.getValue()")
+        okButton = self.valueWindow.button({'key':'okButton','label':'ok','parent':layout,"command":(command.replace("%","NWRig.UI.getValue()") + "\ncmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")")},width= 100)
+        cancelButton = self.valueWindow.button({'key':'cancelButton','label':'cancel','parent':layout,"command":"cmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")"},width= 100)
+        
+    def getValue(self):
+        """
+            returns value from valueWindow
+        """
+        if(cmds.window(self.valueWindow.windowParamters["window"], exists=True)):
+            return self.valueWindow.queryInput("textField")
     
 # just some testing
 if __name__ == "__main__":
     test = NWWindow({})
+    test.createValueWindow("test", "test", "print \"test\"")
+    test.getValue()

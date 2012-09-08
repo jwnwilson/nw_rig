@@ -9,6 +9,7 @@ except ImportError:
         
 import maya.cmds as cmds
 # old utility functions
+import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
 # new utility functions
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
@@ -40,7 +41,7 @@ class NWSpineJoints(NWModule.NWModule):
                 spineChainSctls = spineChainData["sctl"]
                 
                 cmds.parent(spineChainJoints[0], jointGrp)
-                cmds.parent(spineChainSctls[0][1], rootGrp)
+                cmds.parent(spineChainData["root"], rootGrp)
                 
                 cmds.parent(rootGrp, self.rootGrp)
                 
@@ -54,9 +55,9 @@ class NWSpineJoints(NWModule.NWModule):
                 
         @NWModule.rigPrePost
         def rig(self,**kwargs):
-        	# Variables
-        	clusterCtls = []
-        	
+                # Variables
+                clusterCtls = []
+                
                 # create registries
                 self.createRegistry("regRigTransform")
                 self.createRegistry("regRigShape")

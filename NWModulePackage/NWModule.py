@@ -5,11 +5,10 @@
 from functools import wraps
 import maya.cmds as cmds
 # old utility functions
+import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
 # new utility functions
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
-
-
 
 def blueprintPrePost(blueprint):
         @wraps(blueprint)
@@ -79,10 +78,14 @@ class NWModule:
             if cmds.objExists( (self.name + "Blueprint_GRP") ):
                 cmds.setAttr( (self.name + "Blueprint_GRP" + ".v"), 0)
         def blueprintPost(self):
+            # Store root group as container asset
+            cmds.container( self.container, edit=True, f= True, addNode= self.rootGrp, includeNetwork=True, includeHierarchyBelow= True)
             #set blueprint to 1 in container and class
             self.storeVariable("blueprint", "st", "short", 1)
             self.blueprintVar = 1
         def rigPost(self):
+            # Store root group as container asset
+            cmds.container( self.container, edit=True, f= True, addNode= self.rootGrp, includeNetwork=True, includeHierarchyBelow= True)
             #set blueprint to 1 in container and class
             self.storeVariable("rig", "bu", "short", 1)
             # load connections data and connect stuff up!

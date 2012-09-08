@@ -6,6 +6,8 @@ import NWWindow
 import sys
 import os
 
+import NWUtilitiesPackage
+exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
 """
 To do:
    - Rewrite entire module store full path to every entity by a key
@@ -119,6 +121,8 @@ class NWWindowRigUI(NWWindow.NWWindow):
         moduleList.append(rootContainer)
         
         children = cmds.container( (rootContainer), query= True, nodeList= True )
+        cmds.select( children )
+        children = cmds.ls(sl= True, type = "container")
         if children == None:
             return moduleList
         for child in children:
@@ -163,6 +167,32 @@ class NWWindowRigUI(NWWindow.NWWindow):
         name = cmds.textField(windowElement.fullPath, q=True,tx=True)
         
         self.NWRigInstance.blueprintModule(name, blueprintModule)
+        
+    def renameModule(self):
+        """
+            Will rename current module
+        """
+        if self.elementExists("rigList") == False:
+            cmds.warning("No modules found in scene")
+            return None
+        
+        selectedModule = util.getFirst(self.queryInput("rigList"))
+        selectedModule = string.removeSuffix(selectedModule.strip())
+        self.createValueWindow("Enter new module name", "default","NWRig.renameModule(\""+selectedModule+"\", %)")
+        self.loadModules({})
+        
+    def deleteModule(self):
+        """
+            Deletes module
+        """
+        if self.elementExists("rigList") == False:
+            cmds.warning("No modules found in scene")
+            return None
+        
+        selectedModule = util.getFirst(self.queryInput("rigList"))
+        selectedModule = string.removeSuffix(selectedModule.strip())
+        self.NWRigInstance.deleteModule(selectedModule)
+        self.loadModules({})
         
     def updateBlueprintAttributes(self,args):
         """

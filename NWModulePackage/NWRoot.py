@@ -6,8 +6,10 @@ except ImportError:
         print "Error"
 
 import maya.cmds as cmds
-# old 
+# old utility functions
+import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
+# new utility functions
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
 
 class NWRoot(NWModule.NWModule):

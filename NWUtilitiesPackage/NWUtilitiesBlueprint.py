@@ -9,32 +9,33 @@ import NWUtilitiesControl as control
 # Blueprint functions
 # ------------------------
 def createBlueprinterChain( name, args ):
-        'Creates a default blueprinters'
-        rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )
-        ret = {}
-        sctls = []
-        joints = []
-        functArgs = {"shape":"sphere", "size":0.5, "chainNo": 4}
-        functArgs =  dict(functArgs.items() + args.items())
-        
-        #create control
-        for x in range(functArgs["chainNo"]):
-                blueprinter = createBlueprinter( (name + str(x)), functArgs )
-                sctls.append(blueprinter["sctl"])
-                joints.append(blueprinter["jnt"])
-                cmds.move(0,0,(x*1),blueprinter["sctl"][1])
-                
-        # manage joints
-        cmds.parent(joints[0],rootGrp)
-        cmds.parent(sctls[0][1],rootGrp)
-        
-        for x in range(1, functArgs["chainNo"]):
-                cmds.parent(sctls[x][1],sctls[x-1][0])
-                cmds.parent(joints[x],joints[x-1])
-                
-        ret["sctl"] = sctls
-        ret["jnt"] = joints     
-        return ret
+	'Creates a default blueprinters'
+	rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )
+	ret = {}
+	sctls = []
+	joints = []
+	functArgs = {"shape":"sphere", "size":0.5, "chainNo": 4}
+	functArgs =  dict(functArgs.items() + args.items())
+	
+	#create control
+	for x in range(functArgs["chainNo"]):
+		blueprinter = createBlueprinter( (name + str(x)), functArgs )
+		sctls.append(blueprinter["sctl"])
+		joints.append(blueprinter["jnt"])
+		cmds.move(0,0,(x*1),blueprinter["sctl"][1])
+			
+	# manage joints
+	cmds.parent(joints[0],rootGrp)
+	cmds.parent(sctls[0][1],rootGrp)
+	
+	for x in range(1, functArgs["chainNo"]):
+		cmds.parent(sctls[x][1],sctls[x-1][0])
+		cmds.parent(joints[x],joints[x-1])
+	
+	ret["root"] = rootGrp
+	ret["sctl"] = sctls
+	ret["jnt"] = joints     
+	return ret
 
 def createBlueprinter( name, args ):
         'Creates a default blueprinters'
@@ -87,8 +88,8 @@ def createBlueprinter( name, args ):
         """for blueprinter in sctl:
             storeString(blueprinter, "blueprinter", "")
         storeString(jnt, "sjoint", "")"""
-            
-	ret["sctl"] = sctl
+		
+    	ret["sctl"] = sctl
         ret["jnt"] = jnt
         
         return ret

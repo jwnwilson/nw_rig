@@ -1,5 +1,7 @@
 """
-	This needs to be turned into a meta file that will manage the other utility files
+	This file simply manages other utility functions, for now will import all functions so 
+	one namespace can call all utility functions. Each utility can be called from its' own
+	namespace as well.
 """
 
 import maya.cmds as cmds

@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 To do:
-- Need inhertance of modules - done
 - Need to have multiple instances supported and namespaces for items in containers
-- Needs more sub controls for blueprinters
-- Blueprinter direction needs to be influenced by other blueprinter controls
+    - Save overal rig in file re-import with namespace
 - All inputs and outputs refreshed when connection queried can be optimised
 - All components must be stored in containers
-- Need to store connections -done
-- Option to go from rig back to blueprint and via versa
 - Require rename option
 - Create a defomation menu / skinning menu
 
 - Require a pickle / refresh python module data function so scene data can be reloaded into tool
-- Create String array data loader, variable == variable: followed by data
+- Create String array data loader format - ["key:", "data", "data"]
 - Create menu
     - New are you sure box
     - Save all
@@ -25,9 +21,6 @@ To do:
         - save control shapes
         - save connections between objects
         - Clean up rig data connection function
-        
-        
-        
 """
 
 MAYA_STANDALONE = 0
@@ -43,6 +36,7 @@ import maya.OpenMayaAnim as OpenMayaAnim
 import ctypes
 import os
 import sys
+import copy
 import maya.OpenMaya as OpenMaya
 from functools import wraps
 
@@ -64,7 +58,7 @@ if FILE_PATH not in sys.path:
 source utilities first remove duplicate code in __init__
 source packages
 """
-import NWUtilitiesPackage.NWFileUtilities as fileUtil
+import NWUtilitiesPackage.NWUtilitiesFile as fileUtil
 import NWUtilitiesPackage.NWUtilities as util
 reload(fileUtil)
 reload(util)
@@ -75,6 +69,8 @@ Dynamic importing of modules
 PACKAGES = fileUtil.import_packages( FILE_PATH )
 for key in PACKAGES.keys():
     globals()[key] = PACKAGES[key]
+    
+exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
 
 class Command:
         def __init__(self,name): 
@@ -111,26 +107,7 @@ class RigNW:
             
         # ------------------------      
         # Load save data
-        # ------------------------    
-        """def loadBluePrints(self):
-            ""
-                Loads blueprints for current rig
-            ""
-            # refresh UI path
-            self.UI.getFilePath()
-            blueprintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
-            FILE = open(blueprintFilePath,"rU")
-            lineArray = FILE.readlines()
-            FILE.close()
-            
-            # Build blueprints
-            for line in lineArray:
-                moduleName = line.split()[0]
-                module = line.split()[1]
-                self.blueprintModule(moduleName,module )
-            # Load data
-            self.loadBlueprintData()"""
-        
+        # ------------------------            
         def loadBlueprintData(self):
             """
                 Loads blueprint data onto blueprinter
@@ -140,7 +117,7 @@ class RigNW:
             for module in self.getModules():
                 # Load transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
-                self.loadTransforms(filePath)
+                util.loadTransforms(filePath)
                 # Load attributes
             print ("Blueprint data loaded")
         
@@ -152,12 +129,12 @@ class RigNW:
             self.UI.getFilePath()  
             bluePrintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
             # Save module data
-            self.saveBlueprintModuleData( bluePrintFilePath, self.getModules() )
+            util.saveBlueprintModuleData( bluePrintFilePath, self.getModules() )
             # Save detailed info in seperate files
             for module in self.getModules():
                 # Save blueprint transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
-                self.saveTransforms(filePath, module, "regBlueprintTransform" )
+                util.saveTransforms(filePath, module, self.getRegisteredObjects("regBlueprintTransform") )
                 # Save attribute data
             print ("Blueprint data saved")
             
@@ -217,11 +194,11 @@ class RigNW:
                 # Save transforms
                 if "regRigTransform" in registeredAttrs:
                     regTransFilePath = (str(self.UI.filePath) + module + "RigTransData.txt")
-                    self.saveTransforms(regTransFilePath, module, "regRigTransform" )
+                    util.saveTransforms(regTransFilePath, module,  self.getRegisteredObjects("regRigTransform") )
                 # Save shapes
                 if "regRigShapes" in registeredAttrs:
                     regTransFilePath = (str(self.UI.filePath) + module + "RigShapeData.txt")
-                    self.saveShapes(regTransFilePath, module, "regRigShapes" )
+                    util.saveShapes(regTransFilePath, module,  self.getRegisteredObjects("regRigShapes") )
                 
                 writeData += (tab + "Inputs:\n")
                 for data in inputData:
@@ -261,19 +238,19 @@ class RigNW:
             while fileIndice < fileSize:
                 module = lineArray[fileIndice].strip()
                 startModuleIndice = fileIndice
-                endModuleIndice = self.readRigNextModule(fileIndice, lineArray)
-                connections = self.readRigConnectionData(startModuleIndice, endModuleIndice , lineArray)
-                registeredAttr = self.readRigRegisteredAttr(startModuleIndice, endModuleIndice , lineArray)
+                endModuleIndice = util.readRigNextModule(fileIndice, lineArray)
+                connections = util.readRigConnectionData(startModuleIndice, endModuleIndice , lineArray)
+                registeredAttr = util.readRigRegisteredAttr(startModuleIndice, endModuleIndice , lineArray)
                 fileIndice = endModuleIndice
                 
                 # Load registered Attr data
                 for regAttr in registeredAttr:
                     if regAttr.split(".")[1] == "regRigShape":
                         regShapeFilePath = (str(self.UI.filePath) + module + "RigShapeData.txt")
-                        self.loadShapes(regShapeFilePath)
+                        util.loadShapes(regShapeFilePath)
                     if regAttr.split(".")[1] == "regRigTransform":
                         regTransFilePath = (str(self.UI.filePath) + module + "RigTransData.txt")
-                        self.loadTransforms(regTransFilePath)
+                        util.loadTransforms(regTransFilePath)
                 
                 # Create connections
                 for connection in connections:
@@ -287,146 +264,7 @@ class RigNW:
                     self.createConnection(module, connectionKey)
             
             print ("Loaded blueprint data from : " + filePath)
-            
-        def saveShapes(self, filePath, module, regAttr):
-            """
-                Will store shape data in file
-            """
-            objects = self.getRegisteredObjects(module , regAttr)
-            writeData = ""
-            
-            for object in objects:
-                # Get shape
-                shape = util.getFirst(cmds.listRelatives(object, s= True))
-                writeLine = (object + " ")
-                # Get CV number
-                cvNum = int(cmds.getAttr(shape + ".spans") + cmds.getAttr(shape + ".degree"))
-                for x in xrange(cvNum):
-                    pos = cmds.xform( (object + ".cv["+x+"]"), q= True, ws= True, t=True )
-                    writeLine += (pos[0] + " " + pos[1] + " " + pos[2] + " ")
-                writeData += (writeLine + "\n")
-            FILE = open(filePath,"wb")
-            blueprintData = FILE.write(writeData)
-            FILE.close()
-            print ("Saved shape data to : " + filePath)
-            
-        def loadShapes(self, filePath):
-            """
-                Loads shapes from file
-            """
-            FILE = open(filePath,"rU")            
-                
-            for line in FILE:
-                shapeDataLine = line.split()
-                ShapeObject = shapeDataLines[0]
-                shapeDataLines.remove(0)
-                index = 0
-                for x,y,z in shapeDataLines:
-                    cmds.xform( (ShapeObject + ".cv["+index+"]"), ws=True, t= ( x , y , z ) )
-                    index+=1
-                
-            FILE.close()
-            print ("Loaded shape data from : " + filePath)
-            
-        def loadTransforms(self, filePath):
-            """
-                Loads transforms from file
-            """
-            FILE = open(filePath,"rU")            
-                
-            for line in FILE:
-                blueprintDataLine = line.split()
-                blueprintObject = blueprintDataLine[0]
-                translate = [ float( blueprintDataLine[1] ), float( blueprintDataLine[2] ), float( blueprintDataLine[3] ) ]
-                rotate = [ float( blueprintDataLine[4] ), float( blueprintDataLine[5] ), float( blueprintDataLine[6] ) ]
-                scale = [ float( blueprintDataLine[7] ), float( blueprintDataLine[8] ), float( blueprintDataLine[9] ) ]
-                if cmds.objExists(blueprintObject):
-                    util.checkSetCompoundAttr( (blueprintObject + ".t"), translate )
-                    util.checkSetCompoundAttr( (blueprintObject + ".r"), rotate )
-                    util.checkSetCompoundAttr( (blueprintObject + ".s"), scale )
-            FILE.close()
-            print ("Loaded transfrom data from : " + filePath)
-            
-        def saveTransforms(self, filePath, module, regAttr):
-            """
-                Will Store transfrom data in file
-            """
-            objects = self.getRegisteredObjects( module, regAttr)
-            writeData = ""
-            
-            for object in objects:
-                translate = util.getFirst(cmds.getAttr( (object + ".t") ) )
-                rotate = util.getFirst( cmds.getAttr( (object + ".r") ) )
-                scale = util.getFirst( cmds.getAttr( (object + ".s") ) )
-                writeLine = (object + " " + str(translate[0]) + " " + str(translate[1]) + " " + str(translate[2]) + " " +
-                                            str(rotate[0]) + " " + str(rotate[1]) + " " + str(rotate[2]) + " " +
-                                            str(scale[0]) + " " + str(scale[1]) + " " + str(scale[2]) + "\n")
-                writeData += writeLine
-            FILE = open(filePath,"wb")
-            blueprintData = FILE.write(writeData)
-            FILE.close()
-            print ("Saved transform data to : " + filePath)
-            
-        def saveBlueprintModuleData(self, bluePrintFilePath,  modules):
-            """
-                Saves blueprint module names type and parents
-            """
-            writeData = ""
-            for module in modules:
-                writeData += ( module + " " + util.getString(self.Modules[module].container, "type") + "\n" )
-                
-            FILE = open(bluePrintFilePath,"wb")
-            blueprintData = FILE.write(writeData)
-            FILE.close()
         
-        def readRigConnectionData(self,  startModuleIndice, endModuleIndice, lineArray ):
-            """
-                Will read array and retrieve connection data
-            """
-            returnConnectionData= []
-            connectionIndiceStart = 0
-            connectionIndiceEnd = 1
-            for x in xrange( startModuleIndice, endModuleIndice ):
-                # remove spaces
-                line = lineArray[x].strip()
-                if line.startswith("Connections:"):
-                    connectionIndiceStart = (x + 1)
-                elif line.startswith("RegisteredAttr:"):
-                    connectionIndiceEnd = x
-            for x in xrange(connectionIndiceStart, connectionIndiceEnd):
-                returnConnectionData.append(lineArray[x].strip())
-            return returnConnectionData
-            
-        def readRigRegisteredAttr(self, startModuleIndice, endModuleIndice, lineArray):
-            """
-                Will read array and retrieve connection data
-            """
-            returnConnectionData= []
-            connectionIndiceStart = 0
-            connectionIndiceEnd = 1
-            for x in xrange( startModuleIndice, endModuleIndice ):
-                # remove spaces
-                line = lineArray[x].strip()
-                if line.startswith("RegisteredAttr:"):
-                    connectionIndiceStart = (x + 1)
-                elif line.startswith("\t") == False:
-                    connectionIndiceEnd = x
-            for x in xrange(connectionIndiceStart, connectionIndiceEnd):
-                returnConnectionData.append(lineArray[x].strip())
-            return returnConnectionData
-            
-        def readRigNextModule(self, fileIndice, lineArray):
-            """
-                Will Find line indice of next module in file
-            """
-            fileIndice+= 1
-            for x in xrange( fileIndice, len(lineArray) ):
-                line = lineArray[x]
-                if line.startswith("\t") == False:
-                    return x
-            # return EOF
-            return len(lineArray)
-                    
         def getRegisteredObjects(self, module, registry):
             """
                 finds all registered blueprinter objects from containters
@@ -516,20 +354,6 @@ class RigNW:
             #else:
             #    cmds.error("Blueprint group not found for : " + moduleName)
             
-        """def setRigMode(self, moduleName):
-            ""
-                Hides rig and unhides blueprint
-            ""
-            if cmds.objExists( (moduleName + "Rig_GRP") ):
-                cmds.setAttr((moduleName + "Blueprint_GRP" + ".v"), 0)
-                cmds.setAttr((moduleName + "Rig_GRP" + ".v"), 1)
-                self.Modules[moduleName].storeVariable("blueprint", "st", "short", 0)
-                self.Modules[moduleName].blueprintVar = 0
-                self.Modules[moduleName].storeVariable("rig", "st", "short", 1)
-                self.Modules[moduleName].rigVar = 1
-            #else:
-            #    cmds.error("Rig group not found for : " + moduleName)
-        """
         def blueprintMode(self):
             """
                 Builds rig blueprints or sets modules back to blueprint mode
@@ -575,11 +399,7 @@ class RigNW:
         def blueprintModule(self, name ,module):
             """
                 Run blueprint method for module
-            """
-            # get module name
-            #windowElement = self.UI.inputs["blueprintTextField"]
-            #name = cmds.textField(windowElement.fullPath, q=True,tx=True)
-            
+            """            
             # Check that root is built
             if self.rootExists() == False:
                 self.new()
@@ -693,7 +513,6 @@ class RigNW:
             """
             for module in self.Modules.keys():
                 self.Modules[module].updateInputOutputs()
-                
         
         def getInput(self,module,key):
             """
@@ -765,13 +584,40 @@ class RigNW:
                 cmds.connectAttr(output, input, f= True)
             else:
                 cmds.error( ("Connection type not found on connectionAttr: " + connectionAttr) )
-            
+        
         def storeConnection(self, connectionKey, inputkey, outputPlug , type, attrName= "none"):
             """
                 Store connection between output to input on current module
             """
-            
             pass
+        
+        def renameModule(self, module, name):
+            """
+                Renames module
+            """
+            # Rename container and all module components
+            moduleContainer = self.Modules[module].container
+            moduleList = cmds.container( (moduleContainer), query= True, nodeList= True )
+            # Rename module instance and dictionary keys
+            for obj in moduleList:
+                if cmds.objExists(obj):
+                    newName = obj.replace(module, name )
+                    cmds.rename(obj, newName)
+            newName = moduleContainer.replace(module, name )
+            cmds.rename(moduleContainer, newName) 
+            # Change dict entry in NWRig instance
+            self.Modules[string.removeSuffix(newName)] = copy.deepcopy(self.Modules[module])
+            self.Modules[string.removeSuffix(newName)].container = newName
+            del self.Modules[module]
+		
+        def deleteModule(self, module):
+        	"""
+        		Deletes module
+        	"""
+        	moduleContainer = self.Modules[module].container
+        	moduleList = cmds.container( (moduleContainer), query= True, nodeList= True )
+			
+        	cmds.delete(moduleList)
 
 if __name__ == "__main__":
     print "Blueprinting test:"
