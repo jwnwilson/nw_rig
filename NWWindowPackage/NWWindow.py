@@ -66,6 +66,8 @@ class NWWindow:
         self.inputs= {}
         # value window
         self.valueWindow = None
+        # prompt window
+        self.promptWindow = None
         
         #args= {"h":self.windowParamters["windowWidth"], "w":self.windowParamters["windowHeight"], "title":self.windowParamters["title"]}
         self.initialiseWindow(**kwds)
@@ -461,14 +463,16 @@ class NWWindow:
             Will show message and prompt user for a value
         """
         # Create window
-        self.valueWindow = NWWindow({"name":"valueWindow", "windowWidth":500, "windowHeight":100, "title":"NWWindowValue", "NWRig":self})
+        self.valueWindow = NWWindow({"name":"valueWindow", "windowWidth":200, "windowHeight":100, "title":"NWWindowValue", "NWRig":self},s = False)
+        self.promptWindow.windowParamters["sizeable"] = False
         # Root layout
-        layout = self.valueWindow.layout({'key':'rootLayout','label':'root'})
+        layout = self.valueWindow.layout({'key':'rootLayout','label':'root','type':'frameLayout'},width =200,height= 50)
         self.valueWindow.text({'key':'text','label':message,'parent':layout})
         self.valueWindow.textField({'key':'textField','label':defaultValue,'parent':layout})
-        print command.replace("%","NWRig.UI.getValue()")
-        okButton = self.valueWindow.button({'key':'okButton','label':'ok','parent':layout,"command":(command.replace("%","NWRig.UI.getValue()") + "\ncmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")")},width= 100)
-        cancelButton = self.valueWindow.button({'key':'cancelButton','label':'cancel','parent':layout,"command":"cmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")"},width= 100)
+        
+        rowlayout = self.valueWindow.layout({'key':'rowLayout','label':'row','type':'rowLayout',"parent":layout})
+        okButton = self.valueWindow.button({'key':'okButton','label':'ok','parent':rowlayout,"command":(command.replace("%","NWRig.UI.getValue()") + "\ncmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")")},width= 100)
+        cancelButton = self.valueWindow.button({'key':'cancelButton','label':'cancel','parent':rowlayout,"command":"cmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")"},width= 100)
         
     def getValue(self):
         """
@@ -476,6 +480,21 @@ class NWWindow:
         """
         if(cmds.window(self.valueWindow.windowParamters["window"], exists=True)):
             return self.valueWindow.queryInput("textField")
+        
+    def createPromptWindow(self, message, command):
+        """
+            prompt window to give user option to cancel action
+        """
+        # Create window
+        self.promptWindow = NWWindow({"name":"promptWindow", "windowWidth":200, "windowHeight":100, "title":"Are you sure?", "NWRig":self})
+        self.promptWindow.windowParamters["sizeable"] = False
+		# Root layout
+        layout = self.promptWindow.layout({'key':'rootLayout','label':'root'},width =200,height= 50)
+        self.promptWindow.text({'key':'text','label':message,'parent':layout})
+        
+        rowlayout = self.promptWindow.layout({'key':'rowLayout','label':'row','type':'rowLayout',"parent":layout})
+        okButton = self.promptWindow.button({'key':'okButton','label':'ok','parent':rowlayout,"command":(command + "\ncmds.deleteUI(\""+ self.promptWindow.windowParamters["window"] +"\")")},width= 100)
+        cancelButton = self.promptWindow.button({'key':'cancelButton','label':'cancel','parent':rowlayout,"command":"cmds.deleteUI(\""+ self.promptWindow.windowParamters["window"] +"\")"},width= 100)
     
 # just some testing
 if __name__ == "__main__":

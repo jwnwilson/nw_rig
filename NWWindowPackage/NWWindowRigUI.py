@@ -252,6 +252,7 @@ class NWWindowRigUI(NWWindow.NWWindow):
         if self.windowElements.has_key("fileFilePath"):
             textFieldInput = self.queryInput("fileFilePath")
             self.filePath = textFieldInput
+            return self.filePath
         else:
             cmds.error("File file path text field not found")
     

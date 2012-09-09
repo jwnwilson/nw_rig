@@ -22,7 +22,28 @@ def importModule(name):
         __import__(name)
     except ImportError:
         print ("Error importing :" + name)
-        
+
+def checkRigFolderExists( path ):
+    """
+        Checkes folder that will old data exists
+    """
+    if os.path.exists( path ):
+        if os.path.exists( (path + "/rigFile") ):
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def createRigFolders( path ):
+    """
+        Will create folders for rig
+    """
+    if os.path.exists( path ) == False:
+        os.makedirs( path )
+    if os.path.exists( (path + "/rigFile") ) == False:
+        os.makedirs( (path + "/rigFile")  )
+
 def loadModule(module_name):
     """
         Will see if module is loaded and import it or reload it 
@@ -198,8 +219,10 @@ def saveBlueprintModuleData( bluePrintFilePath,  modules):
     """
     writeData = ""
     for module in modules:
-        writeData += ( module + " " + attr.getString(self.Modules[module].container, "type") + "\n" )
-        
+        print module
+        container = (module + "_CNT")
+        writeData += ( module + " " + attr.getString(container, "type") + "\n" )
+    
     FILE = open(bluePrintFilePath,"wb")
     blueprintData = FILE.write(writeData)
     FILE.close()

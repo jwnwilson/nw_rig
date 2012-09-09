@@ -12,15 +12,25 @@ To do:
 - Create String array data loader format - ["key:", "data", "data"]
 - Create menu
     - New are you sure box
-    - Save all
-    - Load all
-- Blueprint Menu
+    - Save rig / all data
+    - Load rig / all data             
+- Blueprint Menu 
+    - Blueprint attributes
     - cleaner menu
-- Rig Menu
+    - mirror function
+        - select blue print and mirror it
+    - Save as blueprint
+- Rig Menu - Done
+    - Rig module attributes
     - Save
         - save control shapes
         - save connections between objects
         - Clean up rig data connection function
+- Connection menu
+    - parenting module
+    - multiple connection types
+- Deformation menu
+
 """
 
 MAYA_STANDALONE = 0
@@ -55,7 +65,6 @@ if FILE_PATH not in sys.path:
     sys.path.append( FILE_PATH )
 
 """
-source utilities first remove duplicate code in __init__
 source packages
 """
 import NWUtilitiesPackage.NWUtilitiesFile as fileUtil
@@ -69,7 +78,8 @@ Dynamic importing of modules
 PACKAGES = fileUtil.import_packages( FILE_PATH )
 for key in PACKAGES.keys():
     globals()[key] = PACKAGES[key]
-    
+
+# import utilities with new short names
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
 
 class Command:
@@ -107,37 +117,131 @@ class RigNW:
             
         # ------------------------      
         # Load save data
-        # ------------------------            
-        def loadBlueprintData(self):
+        # ------------------------
+        def checkAndCreateRigFolders(saveFunction):
+            """
+                Wrapper for save functions to check and create rig folders if necessary
+            """
+            @wraps(saveFunction)
+            def wrapper(self,*args, **kwds):
+                fileUtil.createRigFolders(self.UI.getFilePath())
+                ret = saveFunction(self,*args, **kwds)
+                return ret
+            return wrapper
+            
+        def checkRigFolders(loadFunction):
+            """
+                Wrapper for load functions to check for rig folders
+            """
+            @wraps(loadFunction)
+            def wrapper(self,*args, **kwds):
+                if fileUtil.checkRigFolderExists(self.UI.getFilePath()) == False:
+                    cmds.error("Unable to find folders for rig to load from.")
+                ret = loadFunction(self,*args, **kwds)
+                return ret
+            return wrapper
+            
+        @checkAndCreateRigFolders
+        def saveRig(self):
+            """
+                Will save current rig if built in file
+            """
+            # Check all modules are in rig mode
+            modules = self.Modules.keys()
+            for module in modules:
+                if self.Modules[module].rigMode() != 1:
+                    cmds.error("Cannot save rig as not all modules are in rig mode")
+            # If file exists prompt warning
+            defaultFilePath = ( self.UI.getFilePath() + "rigFile/" + self.name )
+            deatultFolderPath = ( self.UI.getFilePath() + "rigFile/" )
+            
+            # If folder doesn't exist create
+            if os.path.exists( deatultFolderPath ) == False :
+                os.makedirs( deatultFolderPath )
+            
+            cmds.file( rename= defaultFilePath )
+            if os.path.exists( (defaultFilePath + ".ma") ):
+                # prompt and save / exit
+                self.UI.createPromptWindow("Overwrite old save?",("cmds.file( save = True, type='mayaAscii' )\nprint ( \"Rig saved to: " + defaultFilePath+ ".ma\")") )
+            else:
+                # Save file
+                cmds.file( save = True, type='mayaAscii' )
+                print ( "Rig saved to: " + defaultFilePath + ".ma")
+                
+        @checkRigFolders
+        def loadRig(self):
+            """
+                Will load current rig from file
+            """
+            # If file exists prompt warning
+            # Load file
+            defaultFilePath = ( self.UI.getFilePath() + "/rigFile/" + self.name)
+            
+            if os.path.exists( (defaultFilePath + ".ma") ):
+                if cmds.file( q=True, modified=True):
+                    # prompt and save / exit
+                    self.UI.createPromptWindow("Discard changes?",("cmds.file(\""+ defaultFilePath + ".ma\", o = True, f = True)\nprint ( \"Rig loaded from: " + defaultFilePath + ".ma\")") )
+                else:
+                    cmds.file( (defaultFilePath + ".ma") , o = True)
+                    print ( "Rig loaded from: " + defaultFilePath + ".ma")
+            else:
+                cmds.error("Rig file not found.")
+            
+        @checkAndCreateRigFolders
+        def saveAllData(self):
+            """
+                Saves all blueprint and rig data
+            """
+            self.saveBlueprintData()
+            self.saveRigData()
+            
+        @checkRigFolders
+        def loadAllData(self):
+            """
+                Load all blueprint and rig data
+            """
+            self.loadBlueprintData()
+            self.loadRigData()
+            
+        @checkRigFolders
+        def loadBlueprintData(self, modules = None):
             """
                 Loads blueprint data onto blueprinter
             """
+            if modules == None:
+                modules = self.getModules()
+            
             # open file from path in UI
             self.UI.getFilePath()
-            for module in self.getModules():
+            for module in modules:
                 # Load transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
                 util.loadTransforms(filePath)
                 # Load attributes
             print ("Blueprint data loaded")
-        
-        def saveBlueprintData(self):
+            
+        @checkAndCreateRigFolders
+        def saveBlueprintData(self, modules = None ):
             """
                 Saves blueprint data into file
             """
+            if modules == None:
+                modules = self.getModules()
+            
             # refresh UI path
             self.UI.getFilePath()  
             bluePrintFilePath = (str(self.UI.filePath) + "BlueprintData.txt")
             # Save module data
-            util.saveBlueprintModuleData( bluePrintFilePath, self.getModules() )
+            util.saveBlueprintModuleData( bluePrintFilePath, modules )
             # Save detailed info in seperate files
-            for module in self.getModules():
+            for module in modules:
                 # Save blueprint transforms
                 filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
-                util.saveTransforms(filePath, module, self.getRegisteredObjects("regBlueprintTransform") )
+                util.saveTransforms(filePath, module, self.getRegisteredObjects(module,"regBlueprintTransform") )
                 # Save attribute data
             print ("Blueprint data saved")
             
+        @checkAndCreateRigFolders
         def saveRigData(self):
             """
                 Saves registered rig Data
@@ -194,11 +298,11 @@ class RigNW:
                 # Save transforms
                 if "regRigTransform" in registeredAttrs:
                     regTransFilePath = (str(self.UI.filePath) + module + "RigTransData.txt")
-                    util.saveTransforms(regTransFilePath, module,  self.getRegisteredObjects("regRigTransform") )
+                    util.saveTransforms(regTransFilePath, module,  self.getRegisteredObjects(module,"regRigTransform") )
                 # Save shapes
                 if "regRigShapes" in registeredAttrs:
                     regTransFilePath = (str(self.UI.filePath) + module + "RigShapeData.txt")
-                    util.saveShapes(regTransFilePath, module,  self.getRegisteredObjects("regRigShapes") )
+                    util.saveShapes(regTransFilePath, module,  self.getRegisteredObjects(module,"regRigShapes") )
                 
                 writeData += (tab + "Inputs:\n")
                 for data in inputData:
@@ -219,6 +323,7 @@ class RigNW:
             FILE.close()
             print ("Blue print data successfully saved!")
             
+        @checkRigFolders
         def loadRigData(self):
             """
                 Load registered rig data
@@ -375,7 +480,7 @@ class RigNW:
                 else:
                     self.undoRigMode(moduleName)
             # Load data
-            self.loadBlueprintData()
+            #self.loadBlueprintData()
                 
         def rigMode(self):
             """
@@ -394,7 +499,7 @@ class RigNW:
                 # if not build and load data
                 else:
                     self.rigModule({"name":module})
-            self.loadRigData()
+            #self.loadRigData()
             
         def blueprintModule(self, name ,module):
             """
@@ -609,15 +714,15 @@ class RigNW:
             self.Modules[string.removeSuffix(newName)] = copy.deepcopy(self.Modules[module])
             self.Modules[string.removeSuffix(newName)].container = newName
             del self.Modules[module]
-		
+        
         def deleteModule(self, module):
-        	"""
-        		Deletes module
-        	"""
-        	moduleContainer = self.Modules[module].container
-        	moduleList = cmds.container( (moduleContainer), query= True, nodeList= True )
-			
-        	cmds.delete(moduleList)
+            """
+                Deletes module
+            """
+            moduleContainer = self.Modules[module].container
+            moduleList = cmds.container( (moduleContainer), query= True, nodeList= True )
+            
+            cmds.delete(moduleList)
 
 if __name__ == "__main__":
     print "Blueprinting test:"

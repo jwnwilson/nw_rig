@@ -93,7 +93,17 @@ class NWModule:
             
         def isRoot(self):
             return False
-                
+            
+        def blueprintMode(self):
+            if self.getVariable("blueprint") == 1:
+                return True
+            else:
+                return False
+        def rigMode(self):
+            if self.getVariable("rig") == 1:
+                return True
+            else:
+                return False
         @blueprintPrePost        
         def blueprint(self):
             pass

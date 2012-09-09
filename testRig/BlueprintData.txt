@@ -1,3 +1,2 @@
-nwRig NWRoot
-NWSpineJoints NWSpineJoints
 NWHingeJoints NWHingeJoints
+NWSpineJoints NWSpineJoints
