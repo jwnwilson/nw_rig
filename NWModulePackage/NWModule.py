@@ -31,22 +31,35 @@ def rigPrePost(rig):
             args[0].rigPost()
             return ret
         return wrapper 
-
+        
+class Attribute():
+    """
+        Class to hold blueprint and rig attribute data
+    """
+    def __init__(self, name, type, defaultValue, max = None, min = None ):
+        self.name = name
+        self.type = type
+        self.value = defaultValue
+        self.defaultValue = defaultValue
+        self.max = max
+        self.min = min
 
 class NWModule:
         """
             Base Class for all modules
         """
+        #Satic variables
+        blueprintAttributes = []
+        rigAttributes = []
+        
         def __init__(self, name):
-            self.name = name
             # create update variable if module is reloaded get variables from
             # container
+            self.name = name
             self.update = 0
             self.blueprintVar = 0
             self.rigVar = 0
             self.connectVar = 0
-            self.name = name
-            self.attributes = {}
             self.registeredAttributes= []
             self.inputs = {}
             self.outputs = {}
@@ -67,7 +80,14 @@ class NWModule:
             
             # class specific init
             self.initialize()
-                
+            
+        @classmethod
+        def attributes(cls):
+            """
+                attributes for each class
+            """
+            return {"blueprintAttr": cls.blueprintAttributes, "rigAttr" : cls.rigAttributes}
+        
         def initialize(self):
             pass
         def blueprintPre(self):

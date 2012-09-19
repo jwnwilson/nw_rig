@@ -13,12 +13,18 @@ import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
 # new utility functions
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
+
+from NWModule import Attribute
         
 
 class NWHingeJoints(NWModule.NWModule):
         """
             Creates a hinge joints for arms and leg type joints
         """
+        #static variables
+        blueprintAttributes = [Attribute("Joint number", "int", 4)]
+        rigAttributes = [Attribute("Joint number", "int", 4)]
+        
         def initialize(self):
                 # store variables in container
                 util.storeString(self.container, "type", "NWHingeJoints")
