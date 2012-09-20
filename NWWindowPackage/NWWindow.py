@@ -153,7 +153,7 @@ class NWWindow:
         if self.inputs.has_key(input):
             return False
         else:
-            error( "Input :" + input + " already exists" )
+            cmds.error( "Input :" + input + " already exists" )
             return True
             
     def layout(self,args,**kwargs):
@@ -488,7 +488,7 @@ class NWWindow:
         # Create window
         self.promptWindow = NWWindow({"name":"promptWindow", "windowWidth":200, "windowHeight":100, "title":"Are you sure?", "NWRig":self})
         self.promptWindow.windowParamters["sizeable"] = False
-		# Root layout
+        # Root layout
         layout = self.promptWindow.layout({'key':'rootLayout','label':'root'},width =200,height= 50)
         self.promptWindow.text({'key':'text','label':message,'parent':layout})
         
@@ -496,6 +496,35 @@ class NWWindow:
         okButton = self.promptWindow.button({'key':'okButton','label':'ok','parent':rowlayout,"command":(command + "\ncmds.deleteUI(\""+ self.promptWindow.windowParamters["window"] +"\")")},width= 100)
         cancelButton = self.promptWindow.button({'key':'cancelButton','label':'cancel','parent':rowlayout,"command":"cmds.deleteUI(\""+ self.promptWindow.windowParamters["window"] +"\")"},width= 100)
     
+    def createOrganisedForm(self, formKey, elementList, parent ):
+        """
+            will create a form arrange elements inside it and be parented to parent element
+        """
+        def getElementFullPath( key):
+            return self.windowElements[key].fullPath
+        
+        # createform
+        form = self.layout({'key':formKey,'parent':parent,'type':'formLayout'})
+        
+        if elementList == []:
+            return
+        # iterate through elements
+        for element in elementList:
+            # parent them to form
+            self.editElement(element, p = form )
+        # edit elements in form
+        attachForm = []
+        attachControl = []
+        count = 0
+        attachForm.append( (getElementFullPath(elementList[0]), "top", 5) )
+        attachForm.append( (getElementFullPath(elementList[0]), "left", 5) )
+        # iterate through and place them blow each other
+        for x in xrange(1,len(elementList)):
+            attachForm.append( (getElementFullPath(elementList[x]), "left", 5) )
+            attachControl.append( (getElementFullPath(elementList[x]), "top", 10 ,getElementFullPath( elementList[x-1] ) ) )
+        
+        self.editElement(formKey, af= attachForm, an= [], ac= attachControl )
+        
 # just some testing
 if __name__ == "__main__":
     test = NWWindow({})

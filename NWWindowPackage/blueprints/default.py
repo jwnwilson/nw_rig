@@ -27,7 +27,7 @@ window.text({'key':'fileFileText','label':'rig file path:','parent':frame1})
 window.textField({'key':'fileFilePath','label':FILE_PATH,'parent':frame1})
 fileForm = window.layout({'key':'fileForm','parent':frame1,'type':'formLayout'})
 fileText = window.text({'key':'fileText1','label':'file menu','parent':fileForm})
-fileNew = window.button({'key':'fileNewButton','label':'New','parent':fileForm,"command":"NWRig.UI.createPromptWindow(\"Close Scene\", \"cmds.file(f= True, new= True)\")"},width= 100)
+fileNew = window.button({'key':'fileNewButton','label':'New','parent':fileForm,"command":"NWRig.UI.createPromptWindow(\"Close Scene\", \"cmds.file(f= True, new= True)\")\nNWRig = RigNW(\"nwRig\")"},width= 100)
 fileSave = window.button({'key':'fileSaveButton','label':'Save all data','parent':fileForm, "command":"NWRig.saveAllData()"},width= 100)
 fileLoad = window.button({'key':'fileLoadButton','label':'Load all data','parent':fileForm, "command":"NWRig.loadAllData()"},width= 100)
 fileLoadRig = window.button({'key':'fileSaveRigButton','label':'Load rig','parent':fileForm, "command":"NWRig.loadRig()"},width= 100)
@@ -62,6 +62,7 @@ blueprintAttributeframe = window.layout({'key':'blueprintAttributeframe','parent
 #blueprintSaveButton = window.button({'key':'blueprintSaveButton','parent':blueprintForm, 'label':'save',"command":"NWRig.saveBlueprintData()"},width= 100)
 blueprintBlueprintButton = window.button({'key':'blueprintBlueprintButton','parent':blueprintForm, 'label':'create blueprint',"command":"NWRig.UI.createBlueprintModule()"},width= 100)
 blueprintMirrorButton = window.button({'key':'blueprintMirrorButton','parent':blueprintForm, 'label':'mirror blueprint'},width= 100)
+blueprintSaveNewButton = window.button({'key':'blueprintSaveNewButton','parent':blueprintForm, 'label':'save new blueprint'},width= 100)
 
 # Edit form layout
 attachForm = [(blueprintScroll1, "top", 5),
@@ -76,7 +77,9 @@ attachControl =  [(blueprintAttributeframe, "left", 5 ,blueprintScroll1 ),
             #(blueprintSaveButton, "left",10,blueprintLoadButton),
             #(blueprintSaveButton, "top",10,blueprintScroll1),
             (blueprintMirrorButton, "left",10,blueprintBlueprintButton),
-            (blueprintMirrorButton, "top",10,blueprintScroll1)]
+            (blueprintMirrorButton, "top",10,blueprintScroll1),
+			(blueprintSaveNewButton, "left",10,blueprintMirrorButton),
+			(blueprintSaveNewButton, "top",10,blueprintScroll1)]
                   
 window.editElement("blueprintForm", af= attachForm, an= attachNone, ac= attachControl )
 
@@ -90,6 +93,7 @@ rigScroll1 = window.layout({'key':'rigScroll','type':'scrollLayout','parent':rig
 rigAttributeframe = window.layout({'key':'rigAttributeframe','parent':rigForm,'label':'rigAttributes','type':'frameLayout'},width= 250,height= 250) 
 rigRefreshButton = window.button({'key':'rigRefreshButton','parent':rigForm, 'label':'refresh menu',"command":"NWRig.UI.loadModules({})"},width= 100)
 rigRenameButton = window.button({'key':'rigRenameButton','parent':rigForm, 'label':'rename module', "command":"NWRig.UI.renameModule()"},width= 100)
+rigParentButton = window.button({'key':'rigParentButton','parent':rigForm, 'label':'parent module'},width= 100)
 rigDeleteButton = window.button({'key':'rigDeleteButton','parent':rigForm, 'label':'delete module',"command": "NWRig.UI.deleteModule()"},width= 100)
 rigButton = window.button({'key':'rigRigButton','parent':rigForm, 'label':'rig Mode',"command":"NWRig.rigMode()"},width= 100)
 rigLoadButton = window.button({'key':'rigLoadButton','parent':rigForm, 'label':'load rig data', "command": "NWRig.loadRigData()"},width= 100)
@@ -121,7 +125,9 @@ attachControl =  [  (rigAttributeframe, "left", 10, rigScroll1),
                     (rigBlueprintLoadButton, "left",150,rigBlueprintButton),
                     (rigBlueprintLoadButton, "top",10,rigRefreshButton),
                     (rigBlueprintSaveButton, "left",10,rigBlueprintLoadButton),
-                    (rigBlueprintSaveButton, "top",10,rigRefreshButton)]
+                    (rigBlueprintSaveButton, "top",10,rigRefreshButton),
+					(rigParentButton, "left", 10, rigDeleteButton),
+					(rigParentButton, "top", 10, rigScroll1)]
                   
 window.editElement("rigForm", af= attachForm, an= attachNone, ac= attachControl )
 # -----------------------------
@@ -138,7 +144,7 @@ window.connectPopupMenus(connectInputButton, connectOutputButton)
 connectInputScroll = window.layout({'key':'connectInputScroll','type':'scrollLayout','parent':connectForm},width= 250, height= 250)
 connectOutputScroll = window.layout({'key':'connectOutputScroll','type':'scrollLayout','parent':connectForm},width= 250, height= 250)
 
-connectParentButton = window.button({'key':'connectParentButton','parent':connectForm, 'label':'parent'},width= 100)
+#connectParentButton = window.button({'key':'connectParentButton','parent':connectForm, 'label':'parent'},width= 100)
 connectConnectButton = window.button({'key':'connectConnectButton','parent':connectForm, 'label':'connect', "command": "NWRig.UI.connectOutputToInput()"},width= 100)
 
 # Edit form layout
@@ -162,8 +168,12 @@ attachControl =  [(connectOutputButton, "top", 10,connectOutputText ),
                   (connectInputButton,"left", 150,connectOutputButton),
                   (connectInputScroll,"top", 10,connectInputButton),
                   (connectInputScroll,"left", 10,connectOutputScroll),
-                  (connectParentButton,"top", 10,connectOutputScroll),
-                  (connectParentButton,"left", 10,connectConnectButton),
+                  #(connectParentButton,"top", 10,connectOutputScroll),
+                  #(connectParentButton,"left", 10,connectConnectButton),
                   (connectConnectButton,"top", 10,connectInputScroll)]
                   
 window.editElement("connectForm", af= attachForm, an= attachNone, ac= attachControl )
+# -----------------------------
+# Deformation pannel
+# -----------------------------
+deformTab = window.layout({'key':'Deformation','parent':methodTab,'label':'Deformation','type':'frameLayout'})

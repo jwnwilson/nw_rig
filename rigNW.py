@@ -12,6 +12,7 @@ To do:
 - Create String array data loader format - ["key:", "data", "data"]
 - Create menu
 	- New are you sure box - done
+	- New will clear rigInstance memory
 	- Save rig / all data - done 
 	- Load rig / all data - done			
 - Blueprint Menu 

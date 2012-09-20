@@ -19,7 +19,7 @@ To do:
    - Rewrite entire module store full path to every entity by a key
    - Every entity requires a key and a parent
    - Store list of all inputs
-   - Use **kwargs correctly
+   - Remove attribute duplicate code
 """
 
 # temp addition to python path variable
@@ -171,8 +171,8 @@ class NWWindowRigUI(NWWindow.NWWindow):
 			return None
 		blueprintModule = self.queryElement("blueprintModuleName")
 		
-		windowElement = self.inputs["blueprintTextField"]
-		name = cmds.textField(windowElement.fullPath, q=True,tx=True)
+		name = self.queryInput("blueprintTextField")
+		#name = cmds.textField(windowElement.fullPath, q=True,tx=True)
 		
 		# load attributes
 		self.NWRigInstance.createModule(name,blueprintModule )
@@ -187,7 +187,7 @@ class NWWindowRigUI(NWWindow.NWWindow):
 		UIAttrArray = eval('self.'+ method + 'AttributeUIElements')
 		moduleAttributes = eval('self.NWRigInstance.Modules[name].'+ method + 'Attributes')
 		count = 0
-		for key in UIAttrArray.keys()[1::2]:
+		for key in UIAttrArray.keys()[0::2]:
 			value = self.queryInput(key)
 			moduleAttributes[count].value = value
 			count += 1
@@ -249,17 +249,22 @@ class NWWindowRigUI(NWWindow.NWWindow):
 		"""
 			Will load attributes of module in gui
 		"""
+		# Load module name
 		if self.windowElements.has_key("rigAttrTitle") == False:
 			self.text({"key":"rigAttrTitle",'label':'rig module name','parent':"rigAttributeframe"})
 		if self.windowElements.has_key("rigAttrName") == False:
 			self.text({"key":"rigAttrName",'label':module,'parent':"rigAttributeframe"})
 		else:
 			self.editElement("rigAttrName",label= module)
+		
 		# Clear rig attr
 		for key in self.rigAttributeUIElements.keys():
 			self.removeElement(key)
 			del self.rigAttributeUIElements[key]
+		if self.windowElements.has_key("rigAttributeForm"):
+			self.removeElement("rigAttributeForm")
 		self.rigAttributeUIElements = {}
+		
 		# Read module attributes
 		rigAttr = self.NWRigInstance.Modules[string.removeSuffix(module)].rigAttributes
 		for attr in rigAttr:
@@ -272,6 +277,9 @@ class NWWindowRigUI(NWWindow.NWWindow):
 			key = (module + attr.name)
 			self.rigAttributeUIElements[key] = self.windowElements[key]
 			
+		# arrange in UI
+		self.createOrganisedForm("rigAttributeForm",self.rigAttributeUIElements.keys(),"rigAttributeframe" )
+		
 	def loadBlueprintAttributes(self, module):
 		"""
 			Will load attributes of module in gui
@@ -280,23 +288,30 @@ class NWWindowRigUI(NWWindow.NWWindow):
 			self.text({"key":"blueprintModuleName",'label': module,'parent':"blueprintAttributeframe"})
 		else:
 			self.editElement("blueprintModuleName",label= module)
+			
 		# Clear blueprint attr
 		for key in self.blueprintAttributeUIElements.keys():
 			self.removeElement(key)
 			del self.blueprintAttributeUIElements[key]
+		if self.windowElements.has_key("blueprintAttributeForm"):
+			self.removeElement("blueprintAttributeForm")
 		self.blueprintAttributeUIElements = {}
+		
 		# Read module attributes
 		blueprintAttr = eval(module + '.blueprintAttributes')
 		for attr in blueprintAttr:
 			# save blueprint attr UI element
-			self.text({'key':(module + attr.name + 'text'),'label':attr.name,'parent':'blueprintAttributeframe'})
-			self.textField({'key':(module + attr.name),'label':attr.defaultValue,'parent':'blueprintAttributeframe'})
+			textKey = (module + attr.name + 'text').replace(' ', '')
+			attrKey = (module + attr.name).replace(' ','')
+			self.text({'key':textKey,'label':attr.name,'parent':'blueprintAttributeframe'})
+			self.textField({'key':attrKey,'label':attr.defaultValue,'parent':'blueprintAttributeframe'})
 			# save to printattrbuteUIDict
-			key = (module + attr.name + 'text')
-			self.blueprintAttributeUIElements[key] = self.windowElements[key]
-			key = (module + attr.name)
-			self.blueprintAttributeUIElements[key] = self.windowElements[key]
+			self.blueprintAttributeUIElements[textKey] = self.windowElements[textKey]
+			self.blueprintAttributeUIElements[attrKey] = self.windowElements[attrKey]
 			
+		# arrange in UI
+		self.createOrganisedForm("blueprintAttributeForm",self.blueprintAttributeUIElements.keys()[::-1],"blueprintAttributeframe" )
+		
 		self.editElement("blueprintTextField",tx= module)
 		
 	def getFilePath(self):

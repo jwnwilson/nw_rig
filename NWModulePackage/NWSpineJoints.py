@@ -13,11 +13,16 @@ import NWUtilitiesPackage
 import NWUtilitiesPackage.NWUtilities as util
 # new utility functions
 exec NWUtilitiesPackage.NWUtilities.importUtilitiesShortNames()
+from NWModule import Attribute
 
 class NWSpineJoints(NWModule.NWModule):
         """
             Creates a joint chain can be used for spine
         """
+        #static variables
+        blueprintAttributes = [Attribute("Joint number", "int", 4)]
+        rigAttributes = [Attribute("Joint number", "int", 4)]
+        
         def initialize(self):
             # store variables in container
             util.storeString(self.container, "type", "NWSpineJoints")
