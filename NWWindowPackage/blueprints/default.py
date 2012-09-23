@@ -62,6 +62,7 @@ blueprintAttributeframe = window.layout({'key':'blueprintAttributeframe','parent
 #blueprintSaveButton = window.button({'key':'blueprintSaveButton','parent':blueprintForm, 'label':'save',"command":"NWRig.saveBlueprintData()"},width= 100)
 blueprintBlueprintButton = window.button({'key':'blueprintBlueprintButton','parent':blueprintForm, 'label':'create blueprint',"command":"NWRig.UI.createBlueprintModule()"},width= 100)
 blueprintMirrorButton = window.button({'key':'blueprintMirrorButton','parent':blueprintForm, 'label':'mirror blueprint'},width= 100)
+blueprintDuplicateButton = window.button({'key':'blueprintDuplicateButton','parent':blueprintForm, 'label':'duplicate blueprint'},width= 100)
 blueprintSaveNewButton = window.button({'key':'blueprintSaveNewButton','parent':blueprintForm, 'label':'save new blueprint'},width= 100)
 
 # Edit form layout
@@ -78,7 +79,9 @@ attachControl =  [(blueprintAttributeframe, "left", 5 ,blueprintScroll1 ),
             #(blueprintSaveButton, "top",10,blueprintScroll1),
             (blueprintMirrorButton, "left",10,blueprintBlueprintButton),
             (blueprintMirrorButton, "top",10,blueprintScroll1),
-			(blueprintSaveNewButton, "left",10,blueprintMirrorButton),
+            (blueprintDuplicateButton, "left",10,blueprintMirrorButton),
+            (blueprintDuplicateButton, "top",10,blueprintScroll1),
+			(blueprintSaveNewButton, "left",10,blueprintDuplicateButton),
 			(blueprintSaveNewButton, "top",10,blueprintScroll1)]
                   
 window.editElement("blueprintForm", af= attachForm, an= attachNone, ac= attachControl )

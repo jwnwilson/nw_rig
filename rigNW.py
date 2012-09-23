@@ -559,6 +559,16 @@ class RigNW:
 			else:
 				print ("Module \"" + name + "\" already built!")
 				
+		def duplicateModule(self, moduleName, newModuleName):
+			"""
+				duplicated module for now only handles blueprint
+			"""
+			# duplicate blueprint module
+			blueprint.duplicateBlueprint(moduleName, newModuleName)
+			# copy instance
+			self.Modules[newModuleName] = self.Modules[moduleName]
+			# rename instance data
+			
 		def refreshModuleList(self):
 			"""
 				Clears and refreshes module instances
