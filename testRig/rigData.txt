@@ -1,22 +1,22 @@
-NWHingeJoints
+HingeJoints
 	Inputs:
-		NWHingeJoints_CNT.input_root message
+		HingeJoints_CNT.input_root message
 	Outputs:
 	Connections:
-		NWHingeJoints_CNT.connection_endControl_root_data stringArray type: trans attr: None input: NWHingeJoints.root output: NWSpineJoints.endControl connectionKey: endControl_root
+		HingeJoints_CNT.connection_endControl_root_data stringArray type: trans attr: None input: HingeJoints.root output: SpineJoints.endControl connectionKey: endControl_root
 	RegisteredAttr:
-		NWHingeJoints_CNT.regBlueprintTransform message
-		NWHingeJoints_CNT.regBlueprintShape message
-		NWHingeJoints_CNT.regRigTransform message
-		NWHingeJoints_CNT.regRigShape message
-NWSpineJoints
+		HingeJoints_CNT.regBlueprintTransform message
+		HingeJoints_CNT.regBlueprintShape message
+		HingeJoints_CNT.regRigTransform message
+		HingeJoints_CNT.regRigShape message
+SpineJoints
 	Inputs:
-		NWSpineJoints_CNT.input_root message
+		SpineJoints_CNT.input_root message
 	Outputs:
-		NWSpineJoints_CNT.output_endControl message
+		SpineJoints_CNT.output_endControl message
 	Connections:
 	RegisteredAttr:
-		NWSpineJoints_CNT.regBlueprintTransform message
-		NWSpineJoints_CNT.regBlueprintShape message
-		NWSpineJoints_CNT.regRigTransform message
-		NWSpineJoints_CNT.regRigShape message
+		SpineJoints_CNT.regBlueprintTransform message
+		SpineJoints_CNT.regBlueprintShape message
+		SpineJoints_CNT.regRigTransform message
+		SpineJoints_CNT.regRigShape message

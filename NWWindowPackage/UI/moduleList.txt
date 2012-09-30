@@ -1,2 +1,0 @@
-NWHingeJoints default.png Hinge joints with one degree of freedom for example elbow or knee
-NWSpineJoints default.png Spine joints for use in spine like structures

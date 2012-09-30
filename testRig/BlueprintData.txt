@@ -1,2 +1,2 @@
-NWHingeJoints NWHingeJoints
-NWSpineJoints NWSpineJoints
+HingeJoints HingeJoints
+SpineJoints SpineJoints
