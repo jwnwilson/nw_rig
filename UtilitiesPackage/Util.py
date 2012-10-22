@@ -8,7 +8,7 @@ import maya.cmds as cmds
 from vector import *
 from functools import wraps
 
-# import Utilities
+"""# import Utilities
 import File
 import Attribute
 import Blueprint
@@ -19,6 +19,7 @@ import Joint
 import Lib
 import String
 import Transform
+import ModuleUtil
 
 # Reload all modules
 reload(File)
@@ -31,6 +32,7 @@ reload(Joint)
 reload(Lib)
 reload(String)
 reload(Transform)
+reload(ModuleUtil)
 
 # Import all functions into Util module for backward compatibility
 from File import *
@@ -43,6 +45,18 @@ from Joint import *
 from Lib import *
 from String import *
 from Transform import *
+from ModuleUtil import *"""
+
+# Import all utility functions into Util module it will be slow but convient I
+# will need to change my project to source only necessary modules in the very near future before
+# I regret it, handy for debugging purposes
+import UtilitiesPackage
+
+for module in UtilitiesPackage.__all__:
+	command = (	"import " + module + "\n" + \
+				"reload(" + module + ")\n" + \
+				"from " + module + " import *" )
+	exec command
 
 def importUtilities():
 	"""

@@ -21,8 +21,8 @@ class HingeJoints(Module.Module):
             Creates a hinge joints for arms and leg type joints
         """
         #static variables
-        blueprintAttributes = [ModuleAttribute("Joint number", "int", 4)]
-        rigAttributes = [ModuleAttribute("Joint number", "int", 4)]
+        blueprintAttributes = {"Joint number":ModuleAttribute("Joint number", "int", 4)}
+        rigAttributes = {"Joint number":ModuleAttribute("Joint number", "int", 4)}
         
         def initialize(self):
                 # store variables in container
@@ -110,6 +110,7 @@ class HingeJoints(Module.Module):
                 
                 # Get blueprinter joints
                 blueprinters  = self.getBlueprinterJoints()
+                print blueprinters
                 for joint in blueprinters:
                     if cmds.objExists(joint) == False:
                         cmds.error(joint + " not found!")

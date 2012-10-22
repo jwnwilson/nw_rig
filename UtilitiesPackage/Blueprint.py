@@ -4,7 +4,7 @@ import Constraint
 import String
 import Transform
 import Control
-
+import ModuleUtil
 # ------------------------
 # Blueprint functions
 # ------------------------
@@ -32,7 +32,24 @@ def mirrorBlueprint( moduleName, args):
     """
         Will mirror blueprint default is in -x axis
     """
-    pass
+    """# get all module transforms
+    transforms = ModuleUtil.getRegisteredObjects(moduleName,"regBlueprintTransform")
+    # mirror in x default
+    for transform in transforms:
+        tmpGrp = cmds.group(transform)
+        cmds.xform(tmpGrp, ws=True, piv= (0, 0, 0))
+        cmds.scale( -1,1,1, tmpGrp)
+        #cmds.ungroup( tmpGrp )"""
+    # get root mirror it
+    rootGrp = (moduleName + "Root_GRP")
+    if cmds.objExists(rootGrp):
+    	tmpGrp = cmds.group(rootGrp)
+        cmds.xform(tmpGrp, ws=True, piv= (0, 0, 0))
+        cmds.scale( -1,1,1, tmpGrp)
+        cmds.ungroup( tmpGrp )
+    else:
+        cmds.error("Root group not found when mirroring blueprint")
+    
 def createBlueprinterChain( name, args ):
     'Creates a default blueprinters'
     rootGrp = cmds.group( n = (name + "Blueprinter_GRP"), em = True )

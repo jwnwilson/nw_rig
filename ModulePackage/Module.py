@@ -49,8 +49,8 @@ class Module:
             Base Class for all modules
         """
         #Satic variables
-        blueprintAttributes = []
-        rigAttributes = []
+        blueprintAttributes = {}
+        rigAttributes = {}
         
         def __init__(self, name):
             # create update variable if module is reloaded get variables from

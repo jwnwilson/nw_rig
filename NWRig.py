@@ -238,7 +238,7 @@ class NWRigSystem:
 			for module in modules:
 				# Save blueprint transforms
 				filePath = (str(self.UI.filePath) + module + "BlueprintData.txt")
-				Util.saveTransforms(filePath, module, self.getRegisteredObjects(module,"regBlueprintTransform") )
+				Util.saveTransforms(filePath, module, Util.getRegisteredObjects(module,"regBlueprintTransform") )
 				# Save Attributeibute data
 			print ("Blueprint data saved")
 			
@@ -299,11 +299,11 @@ class NWRigSystem:
 				# Save transforms
 				if "regRigTransform" in registeredAttrs:
 					regTransFilePath = (str(self.UI.filePath) + module + "RigTransData.txt")
-					Util.saveTransforms(regTransFilePath, module,  self.getRegisteredObjects(module,"regRigTransform") )
+					Util.saveTransforms(regTransFilePath, module,  Util.getRegisteredObjects(module,"regRigTransform") )
 				# Save shapes
 				if "regRigShapes" in registeredAttrs:
 					regTransFilePath = (str(self.UI.filePath) + module + "RigShapeData.txt")
-					Util.saveShapes(regTransFilePath, module,  self.getRegisteredObjects(module,"regRigShapes") )
+					Util.saveShapes(regTransFilePath, module,  Util.getRegisteredObjects(module,"regRigShapes") )
 				
 				writeData += (tab + "Inputs:\n")
 				for data in inputData:
@@ -360,23 +360,24 @@ class NWRigSystem:
 				
 				# Create connections
 				for connection in connections:
+					print connection
 					connectionKey = Util.getValueFromDataString(connection, "connectionKey")
 					inputPlug = Util.getValueFromDataString(connection, "input")
 					outputPlug = Util.getValueFromDataString(connection, "output")
 					type = Util.getValueFromDataString(connection, "type")
-					Attribute = Util.getValueFromDataString(connection, "Attribute")
+					Attribute = Util.getValueFromDataString(connection, "attr")
 					
-					self.Modules[module].storeConnection(connectionKey, inputPlug, outputPlug , type, AttributeName= "None")
+					self.Modules[module].storeConnection(connectionKey, inputPlug, outputPlug , type, Attribute)
 					self.createConnection(module, connectionKey)
 			
 			print ("Loaded blueprint data from : " + filePath)
 		
-		def getRegisteredObjects(self, module, registry):
-			"""
+		"""def getRegisteredObjects(self, module, registry):
+			""
 				finds all registered blueprinter objects from containters
 				registry is Attributeibute stored on containers connected to 
 				desired objects
-			"""
+			""
 			registeredData =[]
 			# Get container
 			container = self.getContainer(module)
@@ -386,11 +387,11 @@ class NWRigSystem:
 					registeredData = []
 			else:
 				registeredData = []
-			return registeredData
+			return registeredData"""
 		# ------------------------		
 		# Module functions
 		# ------------------------
-		def new(self, **kwards):
+		def new(self, blueprint= True, **kwards):
 			"""
 				create initial hierarchy for rig
 			"""
@@ -399,17 +400,18 @@ class NWRigSystem:
 			rootMod = Root.Root(self.name)
 			self.Modules["root"] = rootMod
 			self.Modules[self.name] = rootMod
-			self.Modules["root"].blueprint()
-			self.rootGrp = self.Modules["root"].rootGrp
+			if blueprint:
+				self.Modules["root"].blueprint()
+				self.rootGrp = self.Modules["root"].rootGrp
 			
-		def moduleExists(self, name):
+		"""def moduleExists(self, name):
 			if cmds.objExists(name + "_CNT"):
 				return True
 			else:
-				return False
+				return False"""
 		
 		def rootExists(self):
-			if self.moduleExists(self.name):
+			if Util.moduleExists(self.name):
 				return True
 			else:
 				return False
@@ -422,16 +424,16 @@ class NWRigSystem:
 			modules = []
 			for key in moduleKeys:
 				name  = self.Modules[key].name
-				if self.moduleExists(name):
+				if Util.moduleExists(name):
 					modules.append(name)
 			return modules
 			
-		def getContainer(self, module):
-			if self.moduleExists(module):
-				return (module + "_CNT")
+		"""def getContainer(self, module):
+			if Util.moduleExists(module):
+				return (module + "_CNT")"""
 				
 		def getRootModuleContainer(self):
-			return self.getContainer(self.name)
+			return Util.getContainer(self.name)
 		
 		def checkMethod(self,name, method):
 			"""
@@ -471,16 +473,19 @@ class NWRigSystem:
 			lineArray = FILE.readlines()
 			FILE.close()
 			
-			# Build blueprints
-			for line in lineArray:
-				moduleName = line.split()[0]
-				module = line.split()[1]
-				# check modules exist
-				if self.moduleExists(moduleName) == False:
-					self.createModule(moduleName,module )
-					self.blueprintModule(moduleName,module )
-				else:
-					self.undoRigMode(moduleName)
+			# Build blueprints from default file is sccene empty
+			if self.rootExists():
+				modules = self.getModules()
+				for module in modules:
+					self.undoRigMode(module)
+			else:
+				for line in lineArray:
+					moduleName = line.split()[0]
+					module = line.split()[1]
+					# check modules exist
+					if Util.moduleExists(moduleName) == False:
+						self.createModule(moduleName,module )
+						self.blueprintModule(moduleName,module )
 			# Load data
 			#self.loadBlueprintData()
 				
@@ -491,7 +496,6 @@ class NWRigSystem:
 			modules = self.getModules()
 			
 			for module in modules:
-				print module
 				# Check modules are built
 				moduleInstance = self.Modules[module]
 				
@@ -508,13 +512,16 @@ class NWRigSystem:
 			"""
 				Creates module instance
 			"""
-			
 			# Check that root is built
-			if self.rootExists() == False and module != "Root":
-				self.new()
+			if self.rootExists() == False:
+				if module == "Root":
+					self.new(blueprint= False)
+					return
+				else:
+					self.new()
 			
 			# Create command
-			if self.moduleExists(name) == False:
+			if Util.moduleExists(name) == False:
 				command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
 				exec command
 				self.Modules[mod.name] = mod
@@ -527,7 +534,7 @@ class NWRigSystem:
 			"""
 				Run blueprint method for module
 			"""	 
-			if self.moduleExists(name):
+			if Util.moduleExists(name):
 				if self.checkMethod( name,"blueprint"):
 					self.Modules[name].blueprint()
 					
@@ -554,7 +561,7 @@ class NWRigSystem:
 			self.refreshModuleList()
 			
 			# check module exists and rig has not been run
-			if self.moduleExists(name) and self.checkMethod(name, "rig"):
+			if Util.moduleExists(name) and self.checkMethod(name, "rig"):
 				mod = self.Modules[name]
 				mod.rig()
 			else:
@@ -565,10 +572,25 @@ class NWRigSystem:
 				duplicated module for now only handles blueprint
 			"""
 			# duplicate blueprint module
-			blueprint.duplicateBlueprint(moduleName, newModuleName)
+			Util.duplicateBlueprint(moduleName, newModuleName)
 			# copy instance
-			self.Modules[newModuleName] = self.Modules[moduleName]
+			self.Modules[newModuleName] = copy.deepcopy(self.Modules[moduleName])
 			# rename instance data
+			self.Modules[newModuleName].name = newModuleName
+			self.Modules[newModuleName].rootGrp = (newModuleName + "Root_GRP")
+			self.Modules[newModuleName].container = (newModuleName + "_CNT")
+			
+			joints = self.Modules[newModuleName].getBlueprinterJoints()
+			for x in range(len(joints)):
+				joints[x] = joints[x].replace(moduleName,newModuleName)
+			self.Modules[newModuleName].storeBlueprinterJoints(joints)
+			
+		def mirrorModule(self, moduleName, newModuleName, axis):
+			"""
+				Duplciates and mirrors module default x-axis
+			"""
+			self.duplicateModule(moduleName, newModuleName)
+			Util.mirrorBlueprint(newModuleName,axis)
 			
 		def refreshModuleList(self):
 			"""
@@ -737,8 +759,8 @@ class NWRigSystem:
 			newName = moduleContainer.replace(module, name )
 			cmds.rename(moduleContainer, newName) 
 			# Change dict entry in Rig instance
-			self.Modules[string.removeSuffix(newName)] = copy.deepcopy(self.Modules[module])
-			self.Modules[string.removeSuffix(newName)].container = newName
+			self.Modules[Util.removeSuffix(newName)] = copy.deepcopy(self.Modules[module])
+			self.Modules[Util.removeSuffix(newName)].container = newName
 			del self.Modules[module]
 		
 		def deleteModule(self, module):

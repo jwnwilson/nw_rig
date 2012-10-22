@@ -471,7 +471,7 @@ class Window:
         self.valueWindow.textField({'key':'textField','label':defaultValue,'parent':layout})
         
         rowlayout = self.valueWindow.layout({'key':'rowLayout','label':'row','type':'rowLayout',"parent":layout})
-        okButton = self.valueWindow.button({'key':'okButton','label':'ok','parent':rowlayout,"command":(command.replace("%","Rig.UI.getValue()") + "\ncmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")")},width= 100)
+        okButton = self.valueWindow.button({'key':'okButton','label':'ok','parent':rowlayout,"command":(command.replace("%","NWRig.UI.getValue()") + "\ncmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")")},width= 100)
         cancelButton = self.valueWindow.button({'key':'cancelButton','label':'cancel','parent':rowlayout,"command":"cmds.deleteUI(\""+ self.valueWindow.windowParamters["window"] +"\")"},width= 100)
         
     def getValue(self):

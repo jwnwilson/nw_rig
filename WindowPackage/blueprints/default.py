@@ -53,7 +53,7 @@ window.editElement("fileForm", af= attachForm, an= attachNone, ac= attachControl
 blueprintTab = window.layout({'key':'Blueprint','parent':methodTab,'label':'blueprinter','type':'frameLayout'}, height= 100)
 window.text({'key':'blueprintText1','label':'Load blueprinter'})
 window.text({'key':'blueprintText2','label':'Module name','parent':blueprintTab},align= "left")
-window.textField({'key':'blueprintTextField','label':'default name','parent':blueprintTab})
+window.textField({'key':'blueprintTextField','label':'defaultName','parent':blueprintTab})
 blueprintForm = window.layout({'key':'blueprintForm','parent':blueprintTab,'type':'formLayout'})
 blueprintScroll1 = window.layout({'key':'blueprintScroll','type':'scrollLayout','parent':blueprintForm, 'label':'blueprinters'},width= 250, height= 250)
 window.loadBlueprintIcons()
@@ -92,8 +92,8 @@ rigSaveButton = window.button({'key':'rigSaveButton','parent':rigForm, 'label':'
 rigBlueprintButton = window.button({'key':'rigRigBlueprintButton','parent':rigForm, 'label':'Blueprints mode',"command":"NWRig.blueprintMode()\nNWRig.UI.loadModules({})"},width= 100)
 rigBlueprintLoadButton = window.button({'key':'rigBlueprintLoadButton','parent':rigForm, 'label':'load blueprint data', "command": "NWRig.loadBlueprintData()"},width= 100)
 rigBlueprintSaveButton = window.button({'key':'rigBlueprintSaveButton','parent':rigForm, 'label':'save blueprint data', "command": "NWRig.saveBlueprintData()"},width= 100)
-rigBlueprintMirrorButton = window.button({'key':'rigBlueprintMirrorButton','parent':rigForm, 'label':'mirror blueprint'},width= 100)
-rigBlueprintDuplicateButton = window.button({'key':'rigBlueprintDuplicateButton','parent':rigForm, 'label':'duplicate blueprint', "command":"NWRig.UI.duplicateBlueprint()"},width= 100)
+rigBlueprintMirrorButton = window.button({'key':'rigBlueprintMirrorButton','parent':rigForm, 'label':'mirror blueprint', "command":"NWRig.UI.mirrorBlueprint()\nprint 'NWRig.UI.mirrorBlueprint()'"},width= 100)
+rigBlueprintDuplicateButton = window.button({'key':'rigBlueprintDuplicateButton','parent':rigForm, 'label':'duplicate blueprint', "command":"NWRig.UI.duplicateBlueprint()\nprint 'NWRig.UI.duplicateBlueprint()'"},width= 100)
 
 # Edit form layout
 attachForm = [(rigScroll1, "top", 5),

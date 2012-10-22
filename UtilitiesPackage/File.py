@@ -160,6 +160,9 @@ def loadShapes( filePath):
     """
         Loads shapes from file
     """
+    if not os.path.isfile(filePath):
+    	 print ("No data found from : " + filePath)
+    	 return
     FILE = open(filePath,"rU")            
         
     for line in FILE:
@@ -178,6 +181,9 @@ def loadTransforms( filePath):
     """
         Loads Transforms from file
     """
+    if not os.path.isfile(filePath):
+    	 print ("No data found from : " + filePath)
+    	 return
     FILE = open(filePath,"rU")            
         
     for line in FILE:

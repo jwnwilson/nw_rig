@@ -1,14 +1,14 @@
 __all__ = [
 			"File",
 			"Attribute",
-			"UtilitiesBlueprint",
+			"Blueprint",
 			"Constraint",
 			"Control",
 			"Curve",
 			"File",
 			"Joint",
 			"Lib",
+			"ModuleUtil",
 			"String",
-			"Transform",
-			"Utilities"
+			"Transform"
 ]
