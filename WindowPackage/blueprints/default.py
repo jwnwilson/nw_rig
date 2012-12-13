@@ -5,11 +5,8 @@
     Date: 08/07/2012
 """
 import os
-# Get OS system
-if os.name == 'posix':
-    FILE_PATH = "/media/WALKMAN/Python/NWRig/testRig/"
-elif os.name == 'nt':
-    FILE_PATH = "F:/Documents and Settings/Noel Wilson/My Documents/Git/NWRig/testRig/"
+#from WindowPackage import RigUI
+mayaFromImport("WindowPackage", "RigUI")
 
 # Initialize window
 window = RigUI.RigUI({"name":self.name, "windowWidth":500, "windowHeight":500, "title":"Window", "Rig":self})

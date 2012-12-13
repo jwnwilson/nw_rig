@@ -1,4 +1,4 @@
 __all__ = [	"Module",
-			"SpineJoints",
-			"HingeJoints",
-			"Root"]
+		"SpineJoints",
+		"HingeJoints",
+		"Root"]

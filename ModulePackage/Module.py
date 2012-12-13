@@ -4,11 +4,8 @@
 """
 from functools import wraps
 import maya.cmds as cmds
-# old Utility functions
-import UtilitiesPackage
-import UtilitiesPackage.Util as Util
-exec Util.importUtilities()
-# new Utility functions
+
+import UtilitiesPackageas as Util
 
 def blueprintPrePost(blueprint):
         @wraps(blueprint)

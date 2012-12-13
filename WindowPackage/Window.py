@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import maya.cmds as cmds
-import UtilitiesPackage.Util as Util
+import UtilitiesPackage as Util
 import sys
 
 """

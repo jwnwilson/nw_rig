@@ -1,11 +1,14 @@
 import os 
 import sys
 import maya.cmds as cmds
+import imp
 
 import Lib
 import Attribute
 import Transform
 import Curve
+
+MODULE_EXTENSIONS = ('.py', '.pyc', '.pyo')
 
 def addSysPaths(paths):
     """
@@ -43,96 +46,19 @@ def createRigFolders( path ):
         os.makedirs( path )
     if os.path.exists( (path + "/rigFile") ) == False:
         os.makedirs( (path + "/rigFile")  )
-
-def loadModule(module_name):
-    """
-        Will see if module is loaded and import it or reload it 
-        respectively
-    """
-    try:
-        if globals().has_key(module_name):
-                print ("Reloading : " + module_name )
-                reload( globals()[module_name] )
-        else:
-                print ("Importing : " + module_name )
-                globals()[module_name] = __import__(module_name) 
-                
-        return globals()[module_name]
-    except ImportError:
-        print ("Error loading :" + module_name)
         
-def loadPackage(package_name):
+def package_contents(package_name):
     """
-        Will see if package is loaded and import it or reload it 
-        respectively
+        Returns names of all modules in package
     """
-    def loadPackageModules(package_name):
-        modules = {}
-        modulesNames = []
-        modules[package_name] = globals()[package_name] 
-        modulesNames =  globals()[package_name].__all__
-        for moduleName in modulesNames:
-            print ("Loading " + moduleName)
-            modules[moduleName] = loadModule(moduleName)
-        return modules
-        
-    modules = {}
-    try:
-        if globals().has_key(package_name):
-                print ("Reloading : " + package_name )
-                reload( globals()[package_name] )
-                modules = loadPackageModules(package_name)
-        else:
-                print ("Importing : " + package_name )
-                globals()[package_name] = __import__(package_name)    
-                modules = loadPackageModules(package_name)
-                
-        return modules
-    except ImportError:
-        print ("Error loading :" + package_name)
+    file, pathname, description = imp.find_module(package_name)
+    if file:
+        raise ImportError('Not a package: %r', package_name)
+    # Use a set because some may be both source and compiled.
+    return set([os.path.splitext(module)[0]
+        for module in os.listdir(pathname)
+        if module.endswith(MODULE_EXTENSIONS)])
 
-def import_Libs(dir):
-    """ Imports the Libs, returns a list of the Libraries. 
-    Pass in dir to scan """
-    
-    Library_list = {} 
-    
-    for f in os.listdir(os.path.abspath(dir)):
-        module_name, ext = os.path.splitext(f) # Handles no-extension files, etc.
-        if ext == '.py': # Important, ignore .pyc/other files.
-            print 'importing module: %s' % (module_name)
-            loadModule(module_name)
-            Library_list[module_name] = globals()[module_name]
- 
-    return Library_list
-
-def import_packages(dir):
-    """ Imports the packages, returns a list of the Libraries. 
-    Pass in dir to scan """
-    
-    Library_list = {} 
-    
-    directories = os.listdir(os.path.abspath(dir))
-    
-    # Reorder list so utlities is sourced first
-    count = 0
-    for d in directories:
-        if d == "UtilitiesPackage":
-            tempVar = directories[0]
-            directories[0] = directories[count]
-            directories[count] = tempVar
-        count += 1
-    
-    for d in directories:
-        package_name, ext = os.path.splitext( d ) # Handles no-extension files, etc.
-        if ext == '' and os.path.isdir( dir+ "/" + package_name): # Important, ignore .pyc/other files.
-            if "__init__.py" in os.listdir( os.path.abspath(dir + "/" + package_name + "/") ):
-                print 'loading package: %s' % (package_name)
-                if (dir  + d + "/") not in sys.path:
-                        sys.path.append( dir + d + "/" )
-                Library_list = dict(Library_list.items() + (loadPackage(package_name)).items())
- 
-    return Library_list
     
 def saveShapes( filePath, module, objects):
     """
@@ -161,8 +87,8 @@ def loadShapes( filePath):
         Loads shapes from file
     """
     if not os.path.isfile(filePath):
-    	 print ("No data found from : " + filePath)
-    	 return
+         print ("No data found from : " + filePath)
+         return
     FILE = open(filePath,"rU")            
         
     for line in FILE:
@@ -182,8 +108,8 @@ def loadTransforms( filePath):
         Loads Transforms from file
     """
     if not os.path.isfile(filePath):
-    	 print ("No data found from : " + filePath)
-    	 return
+         print ("No data found from : " + filePath)
+         return
     FILE = open(filePath,"rU")            
         
     for line in FILE:

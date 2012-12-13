@@ -8,10 +8,7 @@ except ImportError:
         print "Error"
         
 import maya.cmds as cmds
-# old Utility functions
-import UtilitiesPackage
-import UtilitiesPackage.Util as Util
-exec Util.importUtilities()
+import UtilitiesPackageas as Util
 
 # new Utility functions
 from Module import ModuleAttribute

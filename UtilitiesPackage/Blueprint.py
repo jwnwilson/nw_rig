@@ -4,7 +4,7 @@ import Constraint
 import String
 import Transform
 import Control
-import ModuleUtil
+
 # ------------------------
 # Blueprint functions
 # ------------------------
