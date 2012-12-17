@@ -6,7 +6,7 @@ except ImportError:
         print "Error"
 
 import maya.cmds as cmds
-import UtilitiesPackageas as Util
+import UtilitiesPackage as Util
 
 class Root(Module.Module):
         """

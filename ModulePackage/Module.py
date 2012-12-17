@@ -5,7 +5,7 @@
 from functools import wraps
 import maya.cmds as cmds
 
-import UtilitiesPackageas as Util
+import UtilitiesPackage as Util
 
 def blueprintPrePost(blueprint):
         @wraps(blueprint)

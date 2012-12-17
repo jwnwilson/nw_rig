@@ -5,13 +5,13 @@ import Window
 import sys
 import os
 
-import UtilitiesPackage.Util as Util
-import String
+import UtilitiesPackage as Util
+import UtilitiesPackage.String as String
 
 # Need to import all module data for attribute reading
-from Module import Module
-from HingeJoints import HingeJoints
-from SpineJoints import SpineJoints
+from ModulePackage.Module import Module
+from ModulePackage.HingeJoints import HingeJoints
+from ModulePackage.SpineJoints import SpineJoints
 
 """
 To do:
