@@ -94,7 +94,7 @@ class NWRigSystem:
 			"""
 			@wraps(loadFunction)
 			def wrapper(self,*args, **kwds):
-				if File.checkRigFolderExists(self.UI.getFilePath()) == False:
+				if Util.checkRigFolderExists(self.UI.getFilePath()) == False:
 					cmds.error("Unable to find folders for rig to load from.")
 				ret = loadFunction(self,*args, **kwds)
 				return ret
@@ -361,15 +361,9 @@ class NWRigSystem:
 			if blueprint:
 				self.Modules["root"].blueprint()
 				self.rootGrp = self.Modules["root"].rootGrp
-			
-		def moduleExists(self, name):
-			if cmds.objExists(name + "_CNT"):
-				return True
-			else:
-				return False
 		
 		def rootExists(self):
-			if self.moduleExists(self.name):
+			if Util.moduleExists(self.name):
 				return True
 			else:
 				return False
@@ -479,7 +473,7 @@ class NWRigSystem:
 					self.new()
 			
 			# Create command
-			if self.moduleExists(name) == False:
+			if Util.moduleExists(name) == False:
 				command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
 				exec command
 				self.Modules[mod.name] = mod
@@ -492,7 +486,7 @@ class NWRigSystem:
 			"""
 				Run blueprint method for module
 			"""	 
-			if self.moduleExists(name):
+			if Util.moduleExists(name):
 				if self.checkMethod( name,"blueprint"):
 					self.Modules[name].blueprint()
 					

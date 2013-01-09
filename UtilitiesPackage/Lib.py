@@ -42,6 +42,13 @@ def createSingleArray( arrayOfArrays ):
 	    else:
 	    	    ret.append(array)
     return ret
+    
+			
+def moduleExists( name):
+	if cmds.objExists(name + "_CNT"):
+		return True
+	else:
+		return False
 
 # ------------------------
 # arg functions

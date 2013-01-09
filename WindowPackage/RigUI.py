@@ -181,8 +181,8 @@ class RigUI(Window.Window):
             Sets attributes on module
         """
         # Load every other UI element
-        UIAttrArray = exec('self.'+ method + 'AttributeUIElements')
-        moduleAttributes = exec('self.rigInstance.Modules[name].'+ method + 'Attributes')
+        exec('UIAttrArray = self.'+ method + 'AttributeUIElements')
+        exec('moduleAttributes = self.rigInstance.Modules[name].'+ method + 'Attributes')
         
         for key,moduleKey in zip(UIAttrArray.keys()[1::2],moduleAttributes.keys()):
             value = self.queryInput(key)

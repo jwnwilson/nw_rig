@@ -32,5 +32,6 @@ def mayaFromImport( modulePath, module ):
 
 for module in package_contents("UtilitiesPackage"):
 	if module != "__init__":
+		exec mayaImport( module )
 		exec mayaImportAll( module )
 
