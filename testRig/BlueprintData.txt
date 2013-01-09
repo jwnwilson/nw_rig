@@ -1,3 +1,0 @@
-nwRig Root
-HingeJoints HingeJoints
-SpineJoints SpineJoints

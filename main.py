@@ -8,9 +8,9 @@ filePath = "C:/Users/Noel/workspace/Projects/Noel Wilson/Python/NWRig"
 if filePath not in sys.path:
 	sys.path.append(filePath)
 	
-from UtilitiesPackage import mayaImport, mayaFromImport
-
+from UtilitiesPackage.File import mayaImport, mayaFromImport
+from RigSystem.NWRigSystem import NWRigSystem
 mayaImport( "NWRigSystem" )
 
 global NWRig
-NWRig = NWRigSystem.NWRigSystem("nwRig")
+NWRig = NWRigSystem("nwRig")

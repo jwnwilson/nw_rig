@@ -403,8 +403,3 @@ class Module:
                 return Util.getConnectedObjects( (self.container + "." + type) )
             else:
                 cmds.error( (self.container + "." + type) + " not found" )
-# blueprintFunct()
-
-# rigFunct()
-
-# connectFunct()
