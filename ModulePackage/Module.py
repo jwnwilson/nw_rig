@@ -21,7 +21,7 @@ def rigPrePost(rig):
         @wraps(rig)
         def wrapper(*args, **kwds):
             if args[0].blueprintVar  == False :
-               cmds.error(("Blueprint method not run for " + self.name))
+               cmds.error(("Blueprint method not run for " + args[0].name))
             args[0].rigPre()
             print ("calling : Rig " + args[0].name)
             ret = rig(*args, **kwds)

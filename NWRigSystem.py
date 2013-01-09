@@ -48,12 +48,13 @@ class NWRigSystem:
 		"""
 		def __init__(self, name, **kwargs):
 			classArgs = {"UIFile":"defaultBP.py","rerigUI":True}
-			#classArgs =  dict(classArgs.items() + kwargs.items())
-			classArgs =	 Util.defaultArgs( classArgs,  kwargs)
+			classArgs =  Util.defaultArgs( classArgs,  kwargs)
+			
 			self.Modules = {}
 			self.connections = {}
 			self.name = name
 			self.UIFile =  classArgs["UIFile"]
+			
 			if classArgs["rerigUI"]:
 				self.UI = self.initialiseUI()
 				
@@ -62,15 +63,11 @@ class NWRigSystem:
 				read in UIFile
 			"""
 			windowDir = WindowPackage.__path__
-			#filePath = (windowDir[0] + "/blueprints/")
 			filePath = (windowDir[0] + "/blueprints/" +self.UIFile)
 			FILE = open(filePath,"rU")
 			command = FILE.read()
 			FILE.close()
 			exec command
-			#if filePath not in sys.path:
-			#	sys.path.append(filePath)
-			#import defaultBP
 			
 			return window
 			
@@ -83,7 +80,7 @@ class NWRigSystem:
 			"""
 			@wraps(saveFunction)
 			def wrapper(self,*args, **kwds):
-				File.createRigFolders(self.UI.getFilePath())
+				Util.createRigFolders(self.UI.getFilePath())
 				ret = saveFunction(self,*args, **kwds)
 				return ret
 			return wrapper
