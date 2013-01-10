@@ -1,8 +1,10 @@
 """
 	Entry point for NWRig
 """
-
+import maya.cmds as cmds
 import sys
+import RigSystem.NWRigSystem
+reload(RigSystem.NWRigSystem)
 
 filePath = "C:/Users/Noel/workspace/Projects/Noel Wilson/Python/NWRig"
 if filePath not in sys.path:
