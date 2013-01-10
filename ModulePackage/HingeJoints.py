@@ -106,7 +106,6 @@ class HingeJoints(Module.Module):
                 
                 # Get blueprinter joints
                 blueprinters  = self.getBlueprinterJoints()
-                print blueprinters
                 for joint in blueprinters:
                     if cmds.objExists(joint) == False:
                         cmds.error(joint + " not found!")
@@ -147,8 +146,12 @@ class HingeJoints(Module.Module):
                 cmds.parent(rootGrp, self.rootGrp)
                 
                 # register Rigs
-                self.registerObjects((baseCtl + ikCtl + poleCtl), "regRigTransform")
+                self.registerObjects([baseCtl[0]], "regRigTransform")
                 #self.registerObjects(objects, "regRigShape")
+                
+                # store outputs
+		self.storeOutput(baseCtl[0],"rootControl")
+			
         def connect(self,**kwargs):
                 # Get Connection data
                 

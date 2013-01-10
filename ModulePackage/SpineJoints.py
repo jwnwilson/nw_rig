@@ -108,10 +108,11 @@ class SpineJoints(Module.Module):
 			cmds.parent(rootGrp, self.rootGrp)
 			
 			# store outputs
-			self.storeOutput(clusterCtls[3][0],"endControl")
+			self.storeOutput(clusterCtls[0][0],"rootControl")
+			#self.storeOutput(clusterCtls[3][0],"endControl")
 			
 			# register Rigs
-			#self.registerObjects((baseCtl + ikCtl + poleCtl), "regRigTransform")
+			self.registerObjects(clusterCtls, "regRigTransform")
 """
 Test Code
 """
