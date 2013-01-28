@@ -307,22 +307,23 @@ class Window:
         
         return menuFullPath
         
-    def popupMenu(self, args, **kwargs):
-        """
-        Creates pop up menu
-        """
-        defaultArgs = {"key": "key",
-                        "type":"menuItem",
+    def optionMenu(self, args, **kwargs):
+    	"""
+    		Creates an option menu which is used with other commands
+    	"""
+    	defaultArgs = {"key": "key",
+                        "label":"Menu",
+                        "type":"menu",
                         "parent":self.currentParent}
         functArgs =  Util.defaultArgs( defaultArgs, args)
         
         # element initialization checks
         self.elementInitializeCheck(functArgs)
         
-        fullPath= cmds.popupMenu( p= functArgs["parent"], **kwargs )
-        self.saveElement(functArgs["key"], fullPath, functArgs["parent"],functArgs["type"])
+        menuFullPath= cmds.optionMenu (p = functArgs["parent"], label = functArgs["label"], **kwargs )
+        self.saveElement(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
         
-        return fullPath
+        return menuFullPath
         
     def menuItem(self, args, **kwargs):
         """
@@ -341,6 +342,24 @@ class Window:
         self.saveElement(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
         
         return menuFullPath
+        
+    def popupMenu(self, args, **kwargs):
+        """
+        Creates pop up menu
+        """
+        defaultArgs = {"key": "key",
+                        "type":"menuItem",
+                        "parent":self.currentParent}
+        functArgs =  Util.defaultArgs( defaultArgs, args)
+        
+        # element initialization checks
+        self.elementInitializeCheck(functArgs)
+        
+        fullPath= cmds.popupMenu( p= functArgs["parent"], **kwargs )
+        self.saveElement(functArgs["key"], fullPath, functArgs["parent"],functArgs["type"])
+        
+        return fullPath
+        
         
     def guiCommandWrapper(self,command, args, **kwards):
         """

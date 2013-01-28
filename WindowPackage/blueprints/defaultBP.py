@@ -144,6 +144,9 @@ connectOutputScroll = window.layout({'key':'connectOutputScroll','type':'scrollL
 
 #connectParentButton = window.button({'key':'connectParentButton','parent':connectForm, 'label':'parent'},width= 100)
 connectConnectButton = window.button({'key':'connectConnectButton','parent':connectForm, 'label':'connect', "command": "NWRig.UI.connectOutputToInput()"},width= 100)
+connectOptionMenu = window.optionMenu({'key':'connectConnectOptionMenu','parent':connectForm, 'label':'Maintain offset'},width= 100)
+connectMaintainOffset = window.menuItem({'key':'connectMaintainOffset','parent':connectOptionMenu, 'label':'Maintain offset'})
+connectNoMaintainOffset = window.menuItem({'key':'connectNoMaintainOffset','parent':connectOptionMenu, 'label':'No maintain offset'})
 
 # Edit form layout
 attachForm = [(connectOutputText, "top", 5),

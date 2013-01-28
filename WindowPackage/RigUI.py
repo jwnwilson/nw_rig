@@ -13,6 +13,9 @@ from ModulePackage.Module import Module
 from ModulePackage.HingeJoints import HingeJoints
 from ModulePackage.SpineJoints import SpineJoints
 
+# Reload dependancies
+reload(Window)
+
 """
 To do:
    - Rewrite entire module store full path to every entity by a key
