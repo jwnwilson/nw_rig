@@ -419,14 +419,21 @@ class RigUI(Window.Window):
         type = "trans"
         connectInputIconTextScroll = "connectInputIconTextScroll"
         connectOutputIconTextScroll = "connectOutputIconTextScroll"
+        connectOption = "connectConnectOptionMenu"
         connectionKey = ""
         # get Input
         inputKey = Util.getFirst(self.queryInput(connectInputIconTextScroll))
         # get Output
         outputKey = Util.getFirst(self.queryInput(connectOutputIconTextScroll))
+        # get maintain offset
+        connectionOption = self.queryInput(connectOption)
         
         connectionKey = (outputKey + "_" + inputKey)
-        
+        if connectionKey == 'Maintain offset':
+        	type = "transMo"
+        else:
+        	type = "trans"
+        	
         # get Modules
         inputModule = self.queryElement("connectInputButton")
         outputModule = self.queryElement("connectOutputButton")

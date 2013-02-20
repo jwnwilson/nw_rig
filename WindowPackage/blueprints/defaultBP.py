@@ -9,6 +9,7 @@ import maya.cmds as cmds
 from UtilitiesPackage import mayaImport, mayaFromImport
 from WindowPackage import RigUI
 
+reload(RigUI)
 # doesn't work already called as exec can import file normally
 #mayaFromImport("WindowPackage", "RigUI")
 
@@ -144,7 +145,7 @@ connectOutputScroll = window.layout({'key':'connectOutputScroll','type':'scrollL
 
 #connectParentButton = window.button({'key':'connectParentButton','parent':connectForm, 'label':'parent'},width= 100)
 connectConnectButton = window.button({'key':'connectConnectButton','parent':connectForm, 'label':'connect', "command": "NWRig.UI.connectOutputToInput()"},width= 100)
-connectOptionMenu = window.optionMenu({'key':'connectConnectOptionMenu','parent':connectForm, 'label':'Maintain offset'},width= 100)
+connectOptionMenu = window.optionMenu({'key':'connectConnectOptionMenu','parent':connectForm, 'label':'Maintain offset'},width= 200)
 connectMaintainOffset = window.menuItem({'key':'connectMaintainOffset','parent':connectOptionMenu, 'label':'Maintain offset'})
 connectNoMaintainOffset = window.menuItem({'key':'connectNoMaintainOffset','parent':connectOptionMenu, 'label':'No maintain offset'})
 
@@ -171,7 +172,9 @@ attachControl =  [(connectOutputButton, "top", 10,connectOutputText ),
                   (connectInputScroll,"left", 10,connectOutputScroll),
                   #(connectParentButton,"top", 10,connectOutputScroll),
                   #(connectParentButton,"left", 10,connectConnectButton),
-                  (connectConnectButton,"top", 10,connectInputScroll)]
+                  (connectConnectButton,"top", 10,connectInputScroll),
+		  (connectOptionMenu,"left", 10,connectConnectButton),
+                  (connectOptionMenu,"top", 10,connectInputScroll),]
                   
 window.editElement("connectForm", af= attachForm, an= attachNone, ac= attachControl )
 # -----------------------------

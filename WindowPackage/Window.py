@@ -308,10 +308,10 @@ class Window:
         return menuFullPath
         
     def optionMenu(self, args, **kwargs):
-    	"""
-    		Creates an option menu which is used with other commands
-    	"""
-    	defaultArgs = {"key": "key",
+        """
+            Creates an option menu which is used with other commands
+        """
+        defaultArgs = {"key": "key",
                         "label":"Menu",
                         "type":"menu",
                         "parent":self.currentParent}
@@ -321,7 +321,7 @@ class Window:
         self.elementInitializeCheck(functArgs)
         
         menuFullPath= cmds.optionMenu (p = functArgs["parent"], label = functArgs["label"], **kwargs )
-        self.saveElement(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
+        self.saveInput(functArgs["key"], menuFullPath, functArgs["parent"],functArgs["type"])
         
         return menuFullPath
         
@@ -423,13 +423,19 @@ class Window:
         
         #error("This function requires testing for different UI types")
         
-        guiType = cmds.objectTypeUI(inputElement.fullPath)
+        try:
+            guiType = cmds.objectTypeUI( inputElement.fullPath )
+        except RuntimeError:
+            guiType = cmds.objectTypeUI( inputElement.fullPath.split('|')[-1] )
+        
         if guiType == "outlineControl":
             returnVal = cmds.iconTextScrollList(inputElement.fullPath, q = True, si = True, **kwargs)
         elif guiType == "field":
             returnVal = cmds.textField(inputElement.fullPath, q = True, tx = True, **kwargs)
+        elif guiType == "popupMenu":
+            returnVal = cmds.optionMenu(inputElement.fullPath, q = True, v = True, **kwargs)
         else:
-            cmds.error("Element type not found during query")
+            cmds.error("Element type: %s not found during query" % guiType)
         return returnVal
         
     def queryElement(self, elementKey, **kwargs ):
