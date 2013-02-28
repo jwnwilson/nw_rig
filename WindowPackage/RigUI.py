@@ -238,6 +238,8 @@ class RigUI(Window.Window):
         # Check rigIconScroll element exists
         if self.inputs.has_key("rigList"):
             selectedModule = self.queryInput("rigList")
+            print "selectedModule"
+            print selectedModule
             if selectedModule:
                 # Get selected element
                 selectedModule = Util.getFirst(selectedModule)
@@ -429,11 +431,11 @@ class RigUI(Window.Window):
         connectionOption = self.queryInput(connectOption)
         
         connectionKey = (outputKey + "_" + inputKey)
-        if connectionKey == 'Maintain offset':
+        if connectionOption == 'Maintain offset':
         	type = "transMo"
         else:
         	type = "trans"
-        	
+        
         # get Modules
         inputModule = self.queryElement("connectInputButton")
         outputModule = self.queryElement("connectOutputButton")
