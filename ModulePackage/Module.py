@@ -33,9 +33,9 @@ class ModuleAttribute():
     """
         Class to hold blueprint and rig attribute data
     """
-    def __init__(self, name, type, defaultValue, max = None, min = None ):
+    def __init__(self, name, connection_type, defaultValue, max = None, min = None ):
         self.name = name
-        self.type = type
+        self.type = connection_type
         self.value = defaultValue
         self.defaultValue = defaultValue
         self.max = max
@@ -372,34 +372,39 @@ class Module:
             else:
                 return []
                         
-        def createRegistry(self,type):
+        def createRegistry(self,connection_type):
             """                         
                 Will add message attr to container to connect to objects for commands
                 to be called on
                 
                 Stores registry in regAttribute
             """
-            if cmds.objExists( (self.container + "." + type) ) == False:
-                cmds.addAttr(self.container, ln = type, at= "message")
-                self.registerAttribute(type)
+            if cmds.objExists( (self.container + "." + connection_type) ) == False:
+                cmds.addAttr(self.container, ln = connection_type, at= "message")
+                self.registerAttribute(connection_type)
                 
-        def registerObjects(self, objects, type):
+        def registerObjects(self, objects, connection_type):
             """
                 will connect object to container attribute so specific commands can be called on it
                 later
             """
-            if cmds.objExists( (self.container + "." + type) ):
-                for object in objects:
-                    Util.addAttr(object, type, "message" )
-                    cmds.connectAttr((self.container + "." + type), (object + "." + type) )
+            # Cast to type
+            if type(objects) != type([]):
+            	    objects = [objects]
+            	    
+            if cmds.objExists( (self.container + "." + connection_type) ):
+                for obj in objects:
+                    print obj
+                    Util.addAttr(obj, connection_type, "message" )
+                    cmds.connectAttr((self.container + "." + connection_type), (obj + "." + connection_type) )
             else:
-                cmds.error( (self.container + "." + type) + " not found" )
+                cmds.error( (self.container + "." + connection_type) + " not found" )
                     
-        def getRegisteredObjects(self,type):
+        def getRegisteredObjects(self,connection_type):
             """
                 Will return objects connected to registry attribute
             """
-            if cmds.objExists( (self.container + "." + type) ):
-                return Util.getConnectedObjects( (self.container + "." + type) )
+            if cmds.objExists( (self.container + "." + connection_type) ):
+                return Util.getConnectedObjects( (self.container + "." + connection_type) )
             else:
-                cmds.error( (self.container + "." + type) + " not found" )
+                cmds.error( (self.container + "." + connection_type) + " not found" )
