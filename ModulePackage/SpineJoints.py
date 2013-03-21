@@ -112,7 +112,9 @@ class SpineJoints(Module.Module):
 			#self.storeOutput(clusterCtls[3][0],"endControl")
 			
 			# register Rigs
-			self.registerObjects(clusterCtls, "regRigTransform")
+			for clisterCtl in clusterCtls:
+				print clisterCtl
+				self.registerObjects(clusterCtl, "regRigTransform")
 """
 Test Code
 """

@@ -34,14 +34,14 @@ if FILE_PATH not in sys.path:
 source file packages
 """
 import UtilitiesPackage as Util
-import WindowPackage
-import ModulePackage
+import WindowPackage as wp
+import ModulePackage as mp
 
 reload(Util)
-reload(ModulePackage)
-reload(WindowPackage)
+reload(mp)
+reload(wp)
 
-from ModulePackage import *
+#from ModulePackage import *
 
 class Command:
 	def __init__(self,name): 
@@ -73,7 +73,7 @@ class NWRigSystem:
 			read in UIFile
 		"""
 		
-		windowDir = WindowPackage.__path__
+		windowDir = wp.__path__
 		filePath = (windowDir[0] + "/blueprints/" +self.UIFile)
 		FILE = open(filePath,"rU")
 		command = FILE.read()
@@ -347,7 +347,7 @@ class NWRigSystem:
 		"""
 		self.__init__(self.name, rerigUI = False)
 		name = self.name
-		rootMod = Root.Root(self.name)
+		rootMod = mp.Root(self.name)
 		self.Modules["root"] = rootMod
 		self.Modules[self.name] = rootMod
 		if blueprint:
@@ -463,7 +463,7 @@ class NWRigSystem:
 		
 		# Create command
 		if Util.moduleExists(name) == False:
-			command = ("mod = " + str(module) + "." + str(module) + "('"+ name +"')")
+			command = ("mod = mp."+ str(module) + "('"+ name +"')")
 			exec command
 			self.Modules[mod.name] = mod
 			
