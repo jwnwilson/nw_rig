@@ -114,7 +114,7 @@ class Module:
 			self.groups['rig_control'] = contorlGrp
 			
 			# Turn off jointGrp inherit transform to avoid double trans
-			cmds.setAttr( self.groups['joint'] +".inheritsTransform"), 0)
+			cmds.setAttr( (jointGrp +".inheritsTransform"), 0)
 			
 			# Get blueprinter joints
 			blueprinters  = self.getBlueprinterJoints()
@@ -124,7 +124,7 @@ class Module:
 			
 			# Duplicate joints
 			joints = Util.duplicateChain( self.name , blueprinters)
-			cmds.parent(joints[0],self.groups['joint'])
+			cmds.parent(joints[0],jointGrp)
 			self.storeRigJoints(joints)
 			
 			# Hide blueprinters joints
