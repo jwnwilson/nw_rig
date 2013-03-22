@@ -29,17 +29,12 @@ class SpineJoints(Module.Module):
 			"""
 				Creates a joint chain can be used for spine
 			"""
-			
-			# create registries
-			self.createRegistry("regBlueprintTransform")
-			self.createRegistry("regBlueprintShape")
+			# Variables
+			rootGrp = self.groups['blueprint_root'] 
+			jointGrp = self.groups['blueprint_joint'] 
 			
 			# get blueprint attributes
 			jointNo= int(self.blueprintAttributes["Joint number"].value)
-			
-			#create module top group
-			rootGrp = cmds.group( n = (self.name + "Blueprint_GRP"), em = True )
-			jointGrp = cmds.group( n = (self.name + "BlueprintJoint_GRP"), em = True, p = rootGrp )
 			
 			# create blueprinters
 			spineChainData = Util.createBlueprinterChain( (self.name + "SpineChainBlueprinter"), {"chainNo": jointNo})
@@ -63,29 +58,13 @@ class SpineJoints(Module.Module):
         def rig(self,**kwargs):
 			# Variables
 			clusterCtls = []
+			rootGrp = self.groups['rig_root'] 
+			jointGrp = self.groups['rig_joint'] 
+			setupGrp = self.groups['rig_setup'] 
+			contorlGrp = self.groups['rig_control'] 
 			
-			# create registries
-			self.createRegistry("regRigTransform")
-			self.createRegistry("regRigShape")
-			
-			# Check for module container
-			rootGrp = cmds.group( n = (self.name + "Rig_GRP"), em = True )
-			jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
-			setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
-			controlGrp = cmds.group( n = (self.name + "Control_GRP"), em = True, p= rootGrp)
-			
-			# Get blueprinter joints
-			blueprinters  = self.getBlueprinterJoints()
-			for joint in blueprinters:
-				if cmds.objExists(joint) == False:
-					cmds.error(joint + " not found!")
-			
-			# Duplicate joints
-			joints = Util.duplicateChain( self.name , blueprinters)
-			cmds.parent(joints[0],jointGrp)
-			
-			# Hide blueprinters joints
-			cmds.setAttr((self.name + "Blueprint_GRP" + ".v"), 0)
+			# Get rig joints created from blueprint
+			joints = self.getRigJoints()
 			
 			#cmds.ikHandle()
 			handleData = Util.createSplineIk(self.name, joints, sol= "ikSplineSolver")

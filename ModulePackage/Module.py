@@ -61,6 +61,7 @@ class Module:
             self.inputs = {}
             self.outputs = {}
             self.connections = {}
+            self.groups = {}
             
             # create default hierarchy for module
             # if Module already exists use existing objects
@@ -88,18 +89,54 @@ class Module:
         def initialize(self):
             pass
         def blueprintPre(self):
-            pass
+            # create registries
+			self.createRegistry("regBlueprintTransform")
+			self.createRegistry("regBlueprintShape")
+			
+			# create Base Groups
+			self.groups['blueprint_root'] = cmds.group( n = (self.name + "Blueprint_GRP"), em = True )
+			self.groups['blueprint_joint'] = cmds.group( n = (self.name + "BlueprintJoint_GRP"), em = True, p = rootGrp )
                     
         def rigPre(self):
-            # Hide blueprint
-            if cmds.objExists( (self.name + "Blueprint_GRP") ):
-                cmds.setAttr( (self.name + "Blueprint_GRP" + ".v"), 0)
+            # create registries
+			self.createRegistry("regRigTransform")
+			self.createRegistry("regRigShape")
+			
+			# Check for module container
+			rootGrp = cmds.group( n = (self.name + "Rig_GRP"), em = True )
+			jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
+			setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
+			contorlGrp = cmds.group( n = (self.name + "Control_GRP"), em = True, p= rootGrp)
+			
+			self.groups['rig_root'] = rootGrp
+			self.groups['rig_joint'] = jointGrp
+			self.groups['rig_setup'] = setupGrp
+			self.groups['rig_control'] = contorlGrp
+			
+			# Turn off jointGrp inherit transform to avoid double trans
+			cmds.setAttr( self.groups['joint'] +".inheritsTransform"), 0)
+			
+			# Get blueprinter joints
+			blueprinters  = self.getBlueprinterJoints()
+			for joint in blueprinters:
+				if cmds.objExists(joint) == False:
+					cmds.error(joint + " not found!")
+			
+			# Duplicate joints
+			joints = Util.duplicateChain( self.name , blueprinters)
+			cmds.parent(joints[0],self.groups['joint'])
+			self.storeRigJoints(joints)
+			
+			# Hide blueprinters joints
+			cmds.setAttr((self.name + "Blueprint_GRP" + ".v"), 0)
+
         def blueprintPost(self):
             # Store root group as container asset
             cmds.container( self.container, edit=True, f= True, addNode= self.rootGrp, includeNetwork=True, includeHierarchyBelow= True)
             #set blueprint to 1 in container and class
             self.storeVariable("blueprint", "st", "short", 1)
             self.blueprintVar = 1
+            
         def rigPost(self):
             # Store root group as container asset
             cmds.container( self.container, edit=True, f= True, addNode= self.rootGrp, includeNetwork=True, includeHierarchyBelow= True)
@@ -149,7 +186,7 @@ class Module:
             if cmds.attributeQuery(attribute, n= self.container, exists = True ):
                     return cmds.getAttr( (self.container + "." + attribute) )
             else:
-                    cmds.error("Container attribute not found.")
+                    cmds.error("Container attribute not found for attribute name: %s"% (self.container + "." + attribute))
 
         def storeBlueprinterJoints(self, joints):
                 #should check for blueprinter variable
@@ -164,6 +201,20 @@ class Module:
 
         def getBlueprinterControls(self):
                 return self.getVariable("blueprinterControls")
+                
+        def storeRigJoints(self, joints):
+                #should check for blueprinter variable
+                self.storeStringArrayVariable("rigJoints", "rj", joints)
+
+        def getRigJoints(self):
+                return self.getVariable("rigJoints")
+
+        def storeRigControls(self, controls):
+                #should check for blueprinter variable
+                self.storeStringArrayVariable("rigControls", "rc", controls)
+
+        def getRigControls(self):
+                return self.getVariable("rigControls")
                 
         def updateInputOutputs(self):
             """

@@ -26,14 +26,10 @@ class HingeJoints(Module.Module):
         @Module.blueprintPrePost
         def blueprint(self,**kwargs):
                 'Creates a hinge joint can be used for arms or legs'
-                # create registries
-                self.createRegistry("regBlueprintTransform")
-                self.createRegistry("regBlueprintShape")
-                
-                # create Base Groups
-                rootGrp = cmds.group( n = (self.name + "Blueprint_GRP"), em = True )
-                jointGrp = cmds.group( n = (self.name + "BlueprintJoint_GRP"), em = True, p = rootGrp )
-                
+                # Variables
+        	rootGrp = self.groups['blueprint_root'] 
+		jointGrp = self.groups['blueprint_joint'] 
+		
                 # create blueprinters
                 baseData = Util.createBlueprinter((self.name + "BaseBlueprinter"), {"shape":"sphere", "size": 0.5})
                 middleData = Util.createBlueprinter((self.name + "MiddleBlueprinter"), {})
@@ -95,24 +91,14 @@ class HingeJoints(Module.Module):
                 
         @Module.rigPrePost
         def rig(self,**kwargs):
-                # create registries
-                self.createRegistry("regRigTransform")
-                self.createRegistry("regRigShape")
-                # Check for module container
-                rootGrp = cmds.group( n = (self.name + "Rig_GRP"), em = True )
-                jointGrp = cmds.group( n = (self.name + "Joint_GRP"), em = True, p= rootGrp)
-                setupGrp = cmds.group( n = (self.name + "Setup_GRP"), em = True, p= rootGrp)
-                controlGrp = cmds.group( n = (self.name + "Control_GRP"), em = True, p= rootGrp)
-                
-                # Get blueprinter joints
-                blueprinters  = self.getBlueprinterJoints()
-                for joint in blueprinters:
-                    if cmds.objExists(joint) == False:
-                        cmds.error(joint + " not found!")
-                
-                # Duplicate joints
-                joints = Util.duplicateChain( self.name , blueprinters)
-                cmds.parent(joints[0],jointGrp)
+        	# Variables
+        	rootGrp = self.groups['rig_root'] 
+		jointGrp = self.groups['rig_joint'] 
+		setupGrp = self.groups['rig_setup'] 
+		contorlGrp = self.groups['rig_control'] 
+		
+                # Get rig joints created from blueprint
+                joints = self.getRigJoints()
                 
                 if len(joints) > 3:
                     cmds.error("Too many joints in: " + self.name + "!")
@@ -143,7 +129,7 @@ class HingeJoints(Module.Module):
                 poleConst = Util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
                 
                 cmds.parent(baseCtl[1], ikCtl[1], poleCtl[1], controlGrp)
-                cmds.parent(rootGrp, self.rootGrp)
+                cmds.parent(rootGrp, rootGrp)
                 
                 # register Rigs
                 self.registerObjects([baseCtl[0]], "regRigTransform")

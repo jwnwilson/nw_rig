@@ -15,18 +15,16 @@ class Root(Module.Module):
         def initialize(self):
             # store variables in container
             Util.storeString(self.container, "type", "Root")
-        @Module.blueprintPrePost
+        
         def blueprint(self,**kwargs):
              modulesGrp = cmds.group( n = ("modules_GRP"), em = True , p=  self.rootGrp)
              geometryGrp = cmds.group( n = ("geometry_GRP"), em = True , p=  self.rootGrp)
              globalGrp = cmds.group( n = ("global_GRP"), em = True , p=  self.rootGrp)
              
-             self.groups = {}
              self.groups["modules"] = modulesGrp
              self.groups["geometry"] = geometryGrp
              self.groups["global"] = globalGrp
              
-        @Module.rigPrePost
         def rig(self,**kwargs):
             # check for module container
             pass
