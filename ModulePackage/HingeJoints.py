@@ -95,7 +95,7 @@ class HingeJoints(Module.Module):
         	rootGrp = self.groups['rig_root'] 
 		jointGrp = self.groups['rig_joint'] 
 		setupGrp = self.groups['rig_setup'] 
-		contorlGrp = self.groups['rig_control'] 
+		controlGrp = self.groups['rig_control'] 
 		
                 # Get rig joints created from blueprint
                 joints = self.getRigJoints()
@@ -129,7 +129,7 @@ class HingeJoints(Module.Module):
                 poleConst = Util.constrain(poleCtl[0], poleData, args={ "all":1, "name":(self.name + "Pole")} )
                 
                 cmds.parent(baseCtl[1], ikCtl[1], poleCtl[1], controlGrp)
-                cmds.parent(rootGrp, rootGrp)
+                cmds.parent(rootGrp, self.rootGrp)
                 
                 # register Rigs
                 self.registerObjects([baseCtl[0]], "regRigTransform")

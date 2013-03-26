@@ -95,7 +95,7 @@ class Module:
 			
 			# create Base Groups
 			self.groups['blueprint_root'] = cmds.group( n = (self.name + "Blueprint_GRP"), em = True )
-			self.groups['blueprint_joint'] = cmds.group( n = (self.name + "BlueprintJoint_GRP"), em = True, p = rootGrp )
+			self.groups['blueprint_joint'] = cmds.group( n = (self.name + "BlueprintJoint_GRP"), em = True, p = self.groups['blueprint_root'] )
                     
         def rigPre(self):
             # create registries
