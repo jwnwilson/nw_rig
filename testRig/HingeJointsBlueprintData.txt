@@ -1,0 +1,12 @@
+HingeJointsBaseBlueprinterSctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsBaseBlueprinter_SCTL -1.66487117358 5.38187629214 0.0 48.747196591 5.39847523373 -1.23317963329 1.0 1.0 1.0
+HingeJointsMiddleBlueprinter_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsMiddleBlueprinterSctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsEndBlueprinter_SCTL 0.0 -3.93073694548 3.03497702912 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsEndBlueprinterSctl_GRP 0.0 0.0 2.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlX_CTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlXCtl_GRP -0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlY_CTL 0.0 1.5557125188 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlYCtl_GRP 0.0 -1.5557125188 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlZ_CTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+HingeJointsaxisCtlZCtl_GRP 0.0 0.0 -0.0 0.0 0.0 0.0 1.0 1.0 1.0

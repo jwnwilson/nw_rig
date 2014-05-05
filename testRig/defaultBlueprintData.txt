@@ -1,0 +1,12 @@
+defaultBaseBlueprinterSctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultBaseBlueprinter_SCTL -3.27645110668 5.70078607822 -1.12084522761 0.0 0.0 0.0 1.0 1.0 1.0
+defaultMiddleBlueprinter_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultMiddleBlueprinterSctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultEndBlueprinter_SCTL -5.94078712954 4.28413818532 2.72768349055 0.0 0.0 0.0 1.0 1.0 1.0
+defaultEndBlueprinterSctl_GRP 0.0 0.0 2.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlX_CTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlXCtl_GRP -0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlY_CTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlYCtl_GRP 0.0 -0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlZ_CTL 0.0 0.0 -3.29301574529 0.0 0.0 0.0 1.0 1.0 1.0
+defaultaxisCtlZCtl_GRP 0.0 0.0 3.29301574529 0.0 0.0 0.0 1.0 1.0 1.0

@@ -1,0 +1,4 @@
+nwRig Root
+HingeJoints HingeJoints
+default HingeJoints
+SpineJoints SpineJoints

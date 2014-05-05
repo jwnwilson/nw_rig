@@ -1,0 +1,8 @@
+SpineJointsSpineChainBlueprinter0Sctl_GRP 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter0_SCTL 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter1_SCTL 0.0 -0.578391945687 3.17595381308 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter1Sctl_GRP 0.0 0.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter2_SCTL 0.0 -0.460951605055 2.53108816372 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter2Sctl_GRP 0.0 0.0 1.0 0.0 -0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter3_SCTL 0.0 -0.377220238846 2.07131870502 0.0 0.0 0.0 1.0 1.0 1.0
+SpineJointsSpineChainBlueprinter3Sctl_GRP 0.0 0.0 1.0 0.0 -0.0 0.0 1.0 1.0 1.0

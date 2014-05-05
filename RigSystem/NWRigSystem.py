@@ -33,8 +33,6 @@ global FILE_PATH
 FILE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('RigSystem','')
 if FILE_PATH not in sys.path:
         sys.path.append( FILE_PATH )
-        
-        
 
 """
 source file packages
